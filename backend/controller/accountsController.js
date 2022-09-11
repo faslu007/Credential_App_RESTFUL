@@ -23,7 +23,7 @@ const getAccounts = asyncHandler( async (req, res) => {
 // @Create Account
 // @Route Post   api/accounts
 // @access private
-const setAccounts = asyncHandler(async (req, res) => {
+const createAccounts = asyncHandler(async (req, res) => {
     if(!req.body.accountName || !req.body.accountType) {
         res.status(400) 
         throw new Error ('please all the fields');
@@ -172,7 +172,7 @@ const registerProvider = asyncHandler( async (req, res) => {
 
 module.exports = {
     getAccounts,
-    setAccounts,
+    createAccounts,
     updateAccounts,
     deleteAccounts,
     registerProvider 
