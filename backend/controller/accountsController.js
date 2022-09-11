@@ -29,8 +29,7 @@ const setAccounts = asyncHandler(async (req, res) => {
         throw new Error ('please all the fields');
     }
     // validating user Role: Only SuperAdmin has priviage to create a new account
-    const user = await User.findById(req.user.id).select('role').select('-id');
-    if(user.role != 'SuperAdmin'){
+    if(req.user.role != 'SuperAdmin'){
         res.status(400)
         throw new Error('User does not have priviliage to create a new account, please contact you Administrator');
     }
