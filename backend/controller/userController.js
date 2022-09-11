@@ -85,13 +85,13 @@ const verifyOTP = asyncHandler ( async (req, res) =>{
 // @Route POST api/users/login
 // @access Public
 const loginUser = asyncHandler( async (req, res) =>{
+    
     const {email, password} = req.body
     // check user email and get the user data
     const user = await User.findOne({email});
-
     // check the password
     if(user && (await bcrypt.compare(password, user.password))) {
-        res.json({
+        res.status(200).json({
             _id: user.id,
             name: user.name,
             email: user.email,

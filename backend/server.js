@@ -19,7 +19,6 @@ app.use(express.json());
 // for parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true })); 
 
-// for parsing multipart/form-data
 // app.use(upload.array()); 
 app.use(express.static('public'));
 
@@ -35,6 +34,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/accounts', require('./routes/accountsRoutes'));
 app.use('/api/inNetwork', require('./routes/inNetworkRoutes'));
 
+// error hander middlware - return structured error message
 app.use(errorHandler);
 
 

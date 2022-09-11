@@ -10,7 +10,7 @@ const upload = multer()
 router.post('/', upload.none(), registerSuperAdmin);
 router.post('/verifyOPT', upload.none(), verifyOTP),
 router.post('/registerSubUser', protect, registerSubUsers)
-router.get('/login', loginUser)
+router.get('/login', upload.none(), loginUser)
 router.get('/me', protect, getMe)
 
 module.exports = router;
