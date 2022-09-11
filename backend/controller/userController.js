@@ -175,7 +175,7 @@ const registerSubUsers = asyncHandler (async (req, res) => {
     }
 })
 
-// generate JWT Token
+// generate JWT Token on sucess login & register with expiry 5 days
 const generateToken = (id) =>{
     return jwt.sign({id}, process.env.JWT_SECRET, {
         expiresIn: '5d',

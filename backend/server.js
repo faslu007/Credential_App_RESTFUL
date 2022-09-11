@@ -2,13 +2,12 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const port = process.env.PORT || 5000;
 const {errorHandler} = require('./middleware/errorMiddleware')
-const colors = require('colors');
+const colors = require('colors'); // dev depndency to change console message color
 const connectDB = require('./config/db');
-const multer = require("multer");
 const bodyParser = require('body-parser');
 const app = express();
 const path = require("path");
-const compression = require('compression')
+const compression = require('compression') // compress req & res data transfer
 
 connectDB();
 

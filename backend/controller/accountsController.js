@@ -3,17 +3,13 @@ const Account = require('../models/accountsModel');
 const User = require('../models/userModels');
 const Provider = require('../models/providerModel');
 const path = require("path");
-// const multer = require("multer");
-// // const upload = multer();
-const {GridFsStorage} = require('multer-gridfs-storage');
-const { Console } = require('console');
-const router = require('express').Router();
-const url = process.env.MONGO_URI;
+
 
 
 // @GET Accounts
 // @Route Get api/accounts
 // @access private
+    // need to better strategize user privilege validation
 const getAccounts = asyncHandler( async (req, res) => {
     const accounts = await Account.find({assignedUsers: req.user.id}).populate('assignedUsers', 'name').populate('providers', 'providerName');
 
@@ -109,6 +105,7 @@ const updateAccounts = asyncHandler( async (req, res) => {
 // @Delete Accounts
 // @Route Delete api/accounts/:id
 // @access private
+// ||||||This module not completed|||||||
 const deleteAccounts = asyncHandler( async (req, res) => {
     const account = await Account.findById(req.params.id);
 
@@ -124,6 +121,8 @@ const deleteAccounts = asyncHandler( async (req, res) => {
 //@Add new Provider / healthcareStaff to the existing Account /Group
 //@Route POST api/accounts/registerProvider
 //@access Private
+// Pending user privilege validation
+// Need correction::: requesting account's id must take from req.params not from req.body.accountId
 const registerProvider = asyncHandler( async (req, res) => {
     if(!req.body.providerName || !req.body.accountId) {
         res.status(400) 

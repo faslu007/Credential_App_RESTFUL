@@ -1,4 +1,5 @@
 
+// global error handler middleware - returns structured error message with stack
 const errorHandler = (err, req, res, next) => {
     const statusCode = res.statusCode ? res.statusCode : 500
   
@@ -10,6 +11,6 @@ const errorHandler = (err, req, res, next) => {
     })
   }
   
-  module.exports = {
+module.exports = {
     errorHandler,
   }

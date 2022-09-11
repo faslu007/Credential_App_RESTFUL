@@ -7,7 +7,7 @@ const {GridFsStorage} = require('multer-gridfs-storage');
 const router = require('express').Router();
 const url = process.env.MONGO_URI;
 
-// Connection for Grid-FS
+// Connection for Grid-FS FileStorage
   const conn = mongoose.createConnection(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
@@ -23,7 +23,7 @@ const url = process.env.MONGO_URI;
       });
     });
 
-// GridFS - Storage
+// storing the file after validations and returns fileInfo with id to the next function
   const storage = new GridFsStorage({
       url: url,
       options: { useUnifiedTopology: true },
@@ -57,11 +57,11 @@ const url = process.env.MONGO_URI;
     // limit the size to 20mb for any files coming in
       limits: { fileSize: 20000000 },
     // filer out invalid filetypes
-    fileFilter: function (req, file, cb) {
+      fileFilter: function (req, file, cb) {
       checkFileType(file, cb);
     },
     });
-
+    // filter file formats
     function checkFileType(file, cb) {
         // define a regex that includes the file types we accept
           const filetypes = /jpeg|jpg|png|pdf|gif/;
@@ -75,6 +75,8 @@ const url = process.env.MONGO_URI;
         cb('filetype');
     }
 
+
+        // |||need to make this as a global middleware where any routes can have access to this|||
   // Middlware to call file upload feature from the routes file
   const uploadMiddleware = (req, res, next) => {
     const upload = store.single('file');
@@ -93,7 +95,7 @@ const url = process.env.MONGO_URI;
   };
 
   
-
+  // need to do user privilege validation
 // middleware to send files back to the Users
 const getUploadedFile = async ({ params: { id } }, res) => {
       // if no id return error

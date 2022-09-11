@@ -7,6 +7,7 @@ const InNetwork = require('../models/inNetworkModel');
 // @GET All In-network Insurance List which user has access to
 // @Route Get api/inNetwork
 // @access private
+    // User privilage validation pending to code
 const getAllInNetworks = asyncHandler( async (req, res) => {
         // Get the In-network insurance list if requested for an Account / Facility
     const inNetworkInsurances = await InNetwork.find({account: req.params.id}).select('-notes').select('-createdAt');
@@ -24,6 +25,7 @@ const getAllInNetworks = asyncHandler( async (req, res) => {
 // @Route Post   api/inNetwork
 // @access private
 // handles insurance create request for both Group and Individual Providers
+    // need to do provilage validation and account and provider id must pass to req.params form req.body 
 const createInNetwork = asyncHandler(async (req, res) => {
     if(!req.body.insuranceName) {  // form validation
         res.status(400) 
@@ -241,6 +243,7 @@ const createComment = asyncHandler(async (req, res) => {
 // @Get all comments / notes pertains to the insurance user requesting
 // @Route GET   api/inNetwork/notes/:id
 // @access private
+    // need to code user privilege validation
 const getComments = asyncHandler(async (req, res) => {
     try {
         const comments  = await InNetwork.findById({_id: req.params.id }).select('notes').select('status').select('user').populate('user',{'name':1})    

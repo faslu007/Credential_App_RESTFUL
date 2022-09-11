@@ -1,3 +1,13 @@
+
+// deleted from accounts controller
+      // const multer = require("multer");
+    // // const upload = multer();
+    // const {GridFsStorage} = require('multer-gridfs-storage');
+    // const { Console } = require('console');
+    // const router = require('express').Router();
+    // const url = process.env.MONGO_URI;
+
+
 const mongoose = require('mongoose');
 
 
