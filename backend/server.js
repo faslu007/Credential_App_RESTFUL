@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const port = process.env.PORT || 5000;
 const {errorHandler} = require('./middleware/errorMiddleware')
-const colors = require('colors'); // dev depndency to change console message color
+const colors = require('colors'); // dev dependency to change console message color
 const connectDB = require('./config/db');
 const bodyParser = require('body-parser');
 const app = express();
@@ -33,7 +33,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/accounts', require('./routes/accountsRoutes'));
 app.use('/api/inNetwork', require('./routes/inNetworkRoutes'));
 
-// error hander middlware - return structured error message
+// error handler middleware - return structured error message
 app.use(errorHandler);
 
 

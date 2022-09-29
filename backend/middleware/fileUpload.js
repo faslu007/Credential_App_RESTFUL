@@ -24,11 +24,11 @@ const url = process.env.MONGO_URI;
     });
 
 // storing the file after validations and returns fileInfo with id to the next function
+// need revision on creating fileID with Crypto - seems like its not needed
   const storage = new GridFsStorage({
       url: url,
       options: { useUnifiedTopology: true },
       file: (req, file) => {
-      //   console.log(parseInt(req.headers["content-length"]));
         return new Promise((resolve, reject) => {
           crypto.randomBytes(16, (err, buf) => {
             if (err) {
@@ -51,7 +51,7 @@ const url = process.env.MONGO_URI;
       }
     });
   
-  // multer libarary to deal with parsing the files
+  // multer library to deal with parsing the files
     const store = multer({
       storage,
     // limit the size to 20mb for any files coming in
@@ -61,13 +61,13 @@ const url = process.env.MONGO_URI;
       checkFileType(file, cb);
     },
     });
-    // filter file formats
+
+  // filter file formats
     function checkFileType(file, cb) {
-        // define a regex that includes the file types we accept
           const filetypes = /jpeg|jpg|png|pdf|gif/;
-          //check the file extention
+          //check the file extension
           const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-          // more importantly, check the mimetype
+          // more importantly, check the mimetype (application/pdf)
           const mimetype = filetypes.test(file.mimetype);
           // if both are good then continue
           if (mimetype && extname) return cb(null, true);
@@ -77,19 +77,19 @@ const url = process.env.MONGO_URI;
 
 
         // |||need to make this as a global middleware where any routes can have access to this|||
-  // Middlware to call file upload feature from the routes file
+  // Middleware to call file upload feature from the routes file
   const uploadMiddleware = (req, res, next) => {
     const upload = store.single('file');
     upload(req, res, function (err) {
       if (err instanceof multer.MulterError) {
         return res.status(400).json({'message': 'File too large', 'userNotes': req.body.notes});
       } else if (err) {
-        // check if our filetype error occurred
+        // check if filetype error occurred
         if (err === 'filetype') return res.status(400).json({'message': 'File type not supported: please upload jpeg | png | pdf | tiff', 'userNotes': req.body.notes});
         // An unknown error occurred when uploading.
         return res.sendStatus(500);
       }
-      // all good, proceed
+      // all good, proceed to next middleware to store the comment / note
       next();
     });
   };
@@ -100,6 +100,8 @@ const url = process.env.MONGO_URI;
 const getUploadedFile = async ({ params: { id } }, res) => {
       // if no id return error
     if (!id || id === 'undefined') return res.status(400).send('no file id');
+
+
     // if there is an id string, cast it to mongoose's objectId type
     const _id = new mongoose.Types.ObjectId(id);
      // search for the image by id
@@ -112,7 +114,7 @@ const getUploadedFile = async ({ params: { id } }, res) => {
 }
 
 // fileUpload progress tracking to send to client in the future using Socket.io
-function progress_middleware(req, res, next){
+function uploadProgress_Middleware(req, res, next){
   let progress = 0;
   const file_size = req.headers["content-length"];
   
@@ -133,5 +135,5 @@ function progress_middleware(req, res, next){
   module.exports = {
     uploadMiddleware,
     getUploadedFile,
-    progress_middleware
+    uploadProgress_Middleware
   }

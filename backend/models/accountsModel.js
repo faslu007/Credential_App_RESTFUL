@@ -20,6 +20,10 @@ const accountSchema = mongoose.Schema({
         required: true,
         ref: 'User',
       }],
+    inactiveStatus: {
+        type: Boolean,
+        required: false,
+    }
 },
 {
     timestamps: true,

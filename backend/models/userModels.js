@@ -1,8 +1,15 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const validatorPackage = require('validator');
 
 const userSchema = mongoose.Schema(
   {
-    name: {
+    firstName: {
+      type: String,
+      trim: true,
+      max: 64,
+      required: [true, 'Please add a name'],
+    },
+    lastName: {
       type: String,
       required: [true, 'Please add a name'],
     },
@@ -10,30 +17,60 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, 'Please add an email'],
       unique: true,
-    },
+      validate: {
+        validator: validatorPackage.isEmail,
+        message: 'Please provide a valid email',
+      }},
+    phone: {
+        type: String,
+        match: /^(\()?\d{3}(\))?(-|\s)?\d{3}(-|\s)\d{4}$/,
+      },
     password: {
       type: String,
       required: [true, 'Please add a password'],
-    },
-    role: {
-        type: String,
-        required: [true, 'Please add a userRole'],
       },
-    account: [{
+    userRole: {
+      type: String,
+      enum : ['user','admin','superAdmin','viewOnly'],
+      required: [true, 'Please provide appropriate User Role'],
+      default: 'user'
+    },
+    organization: {
+      type: String,
+      required: [true, 'Please add a title'],
+      trim: true,
+      max: 10,
+  },
+    team: {
+      type: String,
+      required: [true, 'Please add a title'],
+      trim: true,
+      max: 10,
+},
+  designation: {
+    type: String,
+    trim: true,
+    max: 10,
+},
+  account: [{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Account',
-      }],
-    subUsers: [{
+        }],
+  subUsers: [{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User',
       }],
-    
-  },
-  {
-    timestamps: true,
-  }
-)
+    superAdmins: [{
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User',
+      }], 
+     },
+    {
+      timestamps: true,
+    }
+  )
 
 module.exports = mongoose.model('User', userSchema) 

@@ -15,12 +15,12 @@
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.125); margin: 10px; border-radius: 8px;">
         <h1 style="color:rgb(229, 238, 239); font-family:'Segoe UI Ligh'; font-size: 40px;">Credential-Pro-App</h1> 
-        <p style="margin-bottom: 20px; color:aliceblue; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 20px;">Verify your Email Address to begin working with our app</p> 
-        <h5 style="color:rgb(255, 255, 255); font-size: 25px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; margin-bottom: -20px;">Hi ${tempUser.name} </h5>  
-        <h5 style="color:rgb(255, 255, 255); font-size: 25px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; margin-top: 30px;">Your OTP is </h5>
-         <h3 style="color:rgb(19, 133, 220); font-size: 55px; margin-bottom: 5px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; margin-top: -40px;">${OTP}</h3> 
-         <p style="margin-bottom: 20px; color:aliceblue; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 20px;">Your OTP will be valid for 15 mins from now. Thank you for registering with us.</p> 
-         <br> </div> </body>
+        <h5 style="color:rgb(255, 255, 255); font-size: 25px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; margin-bottom: -20px;">Hi ${subUser.firstName} </h5>
+        <p style="margin-bottom: 20px; color:aliceblue; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 20px;">An account has been created for you by ${req.user.firstName}, here's the temporary password, please change this at the earliest.</p> 
+          
+        <h5 style="color:rgb(255, 255, 255); font-size: 25px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; margin-top: 30px;">Your temporary password is </h5>
+         <h3 style="color:rgb(19, 133, 220); font-size: 55px; margin-bottom: 5px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; margin-top: -40px;">${generatedPass}</h3> 
+        <br> </div> </body>
 
 
 </html>
