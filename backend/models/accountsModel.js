@@ -4,10 +4,19 @@ const Provider = require('../models/providerModel');
 
 // The Account schema
 const accountSchema = mongoose.Schema({
+    // accountName: {
+    //     type: String,
+    //     unique: [true, 'Another account already exists with the same name'],
+    //     required: [true, 'please add account name']
+    // } ,
+
     accountName: {
-        type: String,
-        required: [true, 'please add account name']
-    } ,
+        type: String, 
+        required: true, 
+        trim: true,
+        max: 20,
+        unique: [true, 'Another account already exist with this name']
+    },
     accountType: {
         type: String,
         required: [true, 'please add account type Facility / Group']
@@ -39,8 +48,6 @@ const accountSchema = mongoose.Schema({
     }
 );
 
-
-
 // mongoose post hook -- update the assignedUsers to its providers whenever assigned user info gets changed
 accountSchema.post('findOneAndUpdate', async function (doc, next){
     if(doc.assignedUsers){
@@ -51,16 +58,3 @@ accountSchema.post('findOneAndUpdate', async function (doc, next){
 })
 
 module.exports = mongoose.model('Account', accountSchema)
-
-
-
-// Story.
-//   find(...).
-//   populate({
-//     path: 'fans',
-//     // filtering field, you can use mongoDB syntax
-//     match: { age: { $gte: 21 } },
-//     // Explicitly exclude `_id`, see http://bit.ly/2aEfTdB
-//     select: 'name -_id'
-//   }).
-//   exec();

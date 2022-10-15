@@ -37,21 +37,30 @@ const createAccount = asyncHandler(async (req, res) => {
         }
         const {accountName, accountType, assignedUsers, primaryContactName,
                 primaryContactPhone } = req.body;
-        if(!accountName || !accountType || !assignedUsers 
+        if(!accountName  || !assignedUsers || !accountType
             || !primaryContactName || !primaryContactPhone) {
             res.status(400) 
             throw new Error ('Please provide all the fields');
         }
         // create account
-        const account  = await Account.create({
-            accountName: accountName,
-            accountType: accountType,
-            assignedUsers: assignedUsers,
-            primaryContactName: primaryContactName,
-            primaryContactPhone: primaryContactPhone,
-        })
+        try {
+            const account  = await Account.create({
+                accountName: accountName,
+                accountType: accountType,
+                assignedUsers: assignedUsers,
+                primaryContactName: primaryContactName,
+                primaryContactPhone: primaryContactPhone,
+            })
+            
+            res.status(200).json(account);
+        } catch (error) {
+            // unlike other validation unique property does not come with message parameter.... 
+            // ....so manually passing the error message 
+            error.message.includes('duplicate key error collection') ? (function(){throw new Error('Another account already exists with the same name')}()) : null;
+            res.status(401)
+            throw new Error ( error )
+        }
         
-        res.status(200).json(account);
 });
 
 
@@ -156,8 +165,12 @@ const createProvider = asyncHandler( async (req, res) => {
 
         res.status(200).json(pushUsersToProvider);
 } catch (error) {
-    throw new Error(error)
-}
+    // unlike other validation unique property does not come with message parameter.... 
+            // ....so manually passing the error message 
+            error.message.includes('duplicate key error collection') ? (function(){throw new Error('Another Provider already exists with the same name')}()) : null;
+            res.status(401)
+            throw new Error ( error )
+    }
 }); 
 
 
