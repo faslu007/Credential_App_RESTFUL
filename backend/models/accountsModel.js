@@ -43,7 +43,7 @@ const accountSchema = mongoose.Schema({
 // .. so both the collection will have same assignedUsers 
 accountSchema.post('findOneAndUpdate', async function (doc, next){
     if(doc.assignedUsers){
-        const updateAssignedUsertoProvider = await Provider.updateMany({ 'account': doc._id }, {'assignedUsers': doc.assignedUsers})
+        const addAssignedUsersToProvider = await Provider.updateMany({ 'account': doc._id }, {'assignedUsers': doc.assignedUsers})
     }
     next()
 })
