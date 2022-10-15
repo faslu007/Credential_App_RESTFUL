@@ -1,11 +1,10 @@
 const jwt = require ('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
-const User = require('../models/userModels');
-const {sendOTP, sendSubUserTempPass} = require('../middleware/emailMiddleware'); 
+const User = require('../models/userModel');
+const Account = require('../models/accountsModel');
+const {sendOTP, sendUserTempPassword} = require('../middleware/otpMiddleware'); 
 const tempUser = require('../models/tempUser');
-
-
 
 
 // @Register superAdminAccount
@@ -21,7 +20,7 @@ const registerSuperAdmin = asyncHandler( async (req, res) =>{
         throw new Error('Please add all fields')
     }
     // password strength validation
-    checkStrongPassword(req.body.password) == true ? null : res.status(400).json("message: Password is weak");
+    checkStrongPassword(req.body.password) == true ? null : res.status(400).json("Please provide a strong password");
     // if user exists in db
     const userExists = await User.findOne({email});
     if (userExists) {
@@ -35,7 +34,7 @@ const registerSuperAdmin = asyncHandler( async (req, res) =>{
     const saveTempUser = await tempUser.create({
         firstName, lastName, email, phone,
         organization, team, designation,
-        userRole: 'SuperAdmin',
+        role: 'Admin',
         password: hashedPassword
     })
     if(saveTempUser) {
@@ -69,7 +68,7 @@ const verifyOTP = asyncHandler ( async (req, res) =>{
         lastName: foundUser.lastName,
         email: foundUser.email,
         phone: foundUser.phone,
-        userRole: 'superAdmin',
+        role: 'Admin',
         password: foundUser.password,
         organization: foundUser.organization,
         team: foundUser.team,
@@ -103,7 +102,7 @@ const loginUser = asyncHandler( async (req, res) =>{
     if(user && (await bcrypt.compare(password, user.password))) {
         res.status(200).json({
             _id: user.id,
-            name: user.name,
+            userName: `${user.firstName} ${user.lastName}`,
             email: user.email,
             token: generateToken(user._id)
         })
@@ -120,37 +119,61 @@ const loginUser = asyncHandler( async (req, res) =>{
 // @access Private
 const getMyInfo = asyncHandler( async (req, res) =>{
     try {
-        const {_id, firstName, lastName, email, phone, userRole, account, subUsers } = await User.findById(req.user.id)
-        .populate([ 
-            { path: 'account', select: '_id accountName providers accountType', populate: [ { path: 'providers', select: '_id providerName' } ] },
-            { path: 'subUsers', select: '_id name' }])
-    
-        res.status(200).json({
+        if(req.user.role == 'Admin'){
+            const {_id, firstName, lastName, email, phone, role, 
+                organization, team, designation} = await User.findById(req.user.id)
+                
+            const allAccounts = await Account.find()
+                    .select('accountName accountType providers')
+                    .populate('providers', 'providerName')
+            const allUsers = await User.find()
+                    .select('firstName lastName')
+            res.status(200).json({
+                id: _id,
+                firstName, lastName, email, phone, role, organization, team, 
+                designation, allUsers, allAccounts
+            })
+        } else {
+            const {_id, firstName, lastName, email, phone, role, 
+                organization, team, designation} = await User.findById(req.user.id)
+                
+            const allAccounts = await Account.find({assignedUsers: req.user.id})
+                    .select('accountName accountType providers')
+                    .populate('providers', 'providerName')
+                
+            res.status(200).json({
             id: _id,
-            firstName, lastName, email, phone, userRole, account, subUsers  
+            firstName, lastName, email, phone, role, organization, 
+            team, designation, allAccounts 
         })
+        }
     } catch (error) {
         res.status(400)
         throw new Error('Error retrieving user info')
     }
+    
 });
 
 
 
-// @POST subUsers - under SuperAdmin
-// @Route POST api/users/registerSubUser
-// @access Private
-const registerSubUsers = asyncHandler (async (req, res) => {
-    if (req.user.userRole !== 'superAdmin'){
+// @POST register new users by the Admin
+// @Route POST api/users/registerUser
+// @access Private -Admin only
+const registerUser = asyncHandler (async (req, res) => {
+    console.log(req.user)
+    if (req.user.role !== 'Admin'){
         res.status(400)
         throw new Error ('You do not have privilege to create subUsers')
     }
-    const {firstName, lastName, email, userRole, organization, team, phone, designation} = req.body
-    // form validation
-    if(!firstName || !lastName || !email || !userRole ||!organization || !team || !phone || !designation) {
+    const {firstName, lastName, email, role, 
+        organization, team, phone, designation} = req.body
+
+        // form validation
+    if (!firstName || !lastName || !phone || !organization
+            || !email || !team || !designation){
         res.status(400)
-        throw new Error ('Please add all fields')
-    }
+        throw new Error('Please add all fields')
+        } 
 
     // if user already exists in the db
     const userExists = await User.findOne({email});
@@ -158,65 +181,128 @@ const registerSubUsers = asyncHandler (async (req, res) => {
         res.status(400)
         throw new Error('User already exists');
     }
-
+    
     // generate tempPassword
-    const generatedPass = generatePassword();
+    const generatedTempPass = generatePassword();
     // hash the Password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(generatedPass, salt);
+    const hashedPassword = await bcrypt.hash(generatedTempPass, salt);
 
-     // create new subUser
-     const subUser = await User.create({
-        firstName, lastName, email, userRole, organization, team, phone, designation, password: hashedPassword,
+     // create tempUser
+    const temporaryUser = await tempUser.create({
+        firstName, lastName, email, role, organization, team, phone, designation, password: hashedPassword,
     });
-
-    if (subUser) {
-         // save subUsers Info to the superAdmin DB
-        const saveSubUserToSuperAdmin = await User.findOneAndUpdate(
-            { _id: req.user.id },
-            { $push: { subUsers: subUser.id } },
-            { upsert: true }
-        );     
-        sendSubUserTempPass(subUser, generatedPass, req, res)
+    // further execution passes to the below function in the email middleware
+    if (temporaryUser) {
+        sendUserTempPassword(temporaryUser, generatedTempPass, req, res)
     }
 });
 
 
-
-
-// @Register changePassword
-// @Route POST api/users/changePassword
-// @access Public
-const changePassword = asyncHandler(async (req, res) => {
-    const {email, currentPassword, newPassword} = req.body;
-    if(!email || !currentPassword || !newPassword){
-        res.status(400)
-        throw new Error ('Please provide email and password')
+// @GET get all users
+// @Route api/users/getallUsers
+// @access Private - Admin only
+const getAllUsers = asyncHandler(async (req, res) => {
+    if(req.user.role != 'Admin') {
+        res.status(401)
+        throw new Error('User does not have privilege to access all users info')
     }
-    if(checkStrongPassword(newPassword) == false || newPassword == currentPassword){
-        res.status(400)
-        throw new Error('message: Password is weak or current password is same as new password')
-    }
-    const user = await User.findOne({email});
-    if(user && (await bcrypt.compare(currentPassword, user.password))) {
-        // hash the newPassword to save to DB
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
-        // save newPass to DB
-        const updatePass = await User.findOneAndUpdate({email}, {password: hashedPassword});
-        res.status(200).json({
-            _id:        user.id,
-            firstName:  user.firstName,
-            lastName:   user.lastName,
-            email:      user.email,
-            token: generateToken(user._id)
-        })
-    } else {
-        res.status(400)
-        throw new Error('Invalid credentials')
+    try {
+        const allUsers = await User.find()
+        .select('-password')
+
+        res.status(200).json(allUsers)
+    } catch (error) {
+        res.status(502)
+        throw new Error(error)
     }
 })
 
+// @PATCH Update User info
+// @Route PATCH  api/users/updateUser
+// @access Private - Admin only
+const updateUser = asyncHandler (async(req, res) => {
+        if(req.user.role != 'Admin') {
+            res.status(401)
+            throw new Error('Does not have privilege to update user info')
+        }
+        const {firstName, lastName, email, role, phone,
+                organization, team, designation} = req.body
+        if(!firstName || !lastName || !email || !role || !team 
+            || !phone || !designation || !organization){
+            res.status(400)
+            throw new Error('Please add all fields')
+        }
+        try {
+            const updatedUser = await User.findOneAndUpdate(
+                { '_id': req.params.id },
+                { '$set': { 'firstName': firstName, 'lastName': lastName, 
+                            'email': email, 'role': role, 'phone': phone,
+                            'organization': organization, 'team': team, 'designation':designation}},
+                            {new: true}).select('-password')
+            if(updatedUser){
+                res.status(202).json(updatedUser)
+            }
+        } catch (error) {
+            res.status(500)
+            throw new Error('Could not update the info - server error')
+        }
+})
+
+
+// @ChangePassword
+// @Route POST api/users/resetpassword
+// @access Public
+const resetPassword = asyncHandler(async (req, res) => {
+        const {email, currentPassword, newPassword} = req.body;
+            if(!email || !currentPassword || !newPassword){
+                res.status(400)
+                throw new Error ('Please provide email and password')
+            }
+            if(checkStrongPassword(newPassword) == false || newPassword == currentPassword){
+                res.status(400)
+                throw new Error('message: Password is weak or current password is same as new password')
+            }
+        
+        const foundUser = await tempUser.findOne({email})
+        
+        if(foundUser && (await bcrypt.compare(currentPassword, foundUser.password))) {
+            // hash the newPassword to save to DB
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+                // move User from tempUser db to User db
+                try {
+                    const user = await User.create({
+                        firstName: foundUser.firstName,
+                        lastName: foundUser.lastName,
+                        email: foundUser.email,
+                        phone: foundUser.phone,
+                        role: foundUser.role,
+                        password: hashedPassword,
+                        organization: foundUser.organization,
+                        team: foundUser.team,
+                        designation: foundUser.designation,
+                    })
+                    if(user){
+                        // delete userInfo from temporary db
+                        const deleteTempUser = await tempUser.findOneAndDelete({email});
+                            }
+                    res.status(200).json({
+                        _id:        user.id,
+                        firstName:  user.firstName,
+                        lastName:   user.lastName,
+                        email:      user.email,
+                        token: generateToken(user._id)
+                        })
+                } catch (error) {
+                    res.status(501)
+                    throw new Error ('Error in activating user account, please contact admin')
+                }   
+    } else {
+            res.status(401)
+            throw new Error('Invalid credentials')
+    }
+})
 
 
 
@@ -237,7 +323,6 @@ function generatePassword() {
                     * str.length + 1);
         pass += str.charAt(char)
     }
-      
     return pass;
 }
 
@@ -254,7 +339,9 @@ module.exports = {
     registerSuperAdmin,
     loginUser,
     getMyInfo,
-    registerSubUsers,
+    registerUser,
     verifyOTP,
-    changePassword,
+    resetPassword,
+    updateUser,
+    getAllUsers
 }

@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Account = require('../models/accountsModel');
-const User = require('../models/userModels');
+const User = require('../models/userModel');
 const InNetwork = require('../models/inNetworkModel');
 
 
@@ -34,7 +34,7 @@ const createInNetwork = asyncHandler(async (req, res) => {
     // validates if the id recieved matches the account if not req passes to add the insurance to provider
     const accountExistis = await Account.findById(req.body.providerOrAccount);
 
-    if (accountExistis != null) {
+    if (accountExistis) {
     try {
         const insurance  = await InNetwork.create({
             insuranceName: req.body.insuranceName,

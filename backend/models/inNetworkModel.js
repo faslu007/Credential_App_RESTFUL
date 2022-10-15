@@ -14,6 +14,7 @@ const notesSchema = mongoose.Schema({
     note: {
         type: String,
         required: true,
+        max: 500,
       },
     fileID: {
         type: String,
@@ -37,7 +38,7 @@ const inNetworkSchema = mongoose.Schema({
           type: String,
           required: [true, 'please add account type Facility / Group']
       } ,
-      user: [{
+      assignedUser: [{
           type: mongoose.Schema.Types.ObjectId,
           required: true,
           ref: 'User',
@@ -59,7 +60,7 @@ const inNetworkSchema = mongoose.Schema({
       inactive: {
           type: { type: Boolean, default: false },
         },
-      specialNotes: {
+      descriptions: {
           type: String,
         },
       notes: [notesSchema],

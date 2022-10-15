@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
-const user = require('../models/userModels');
+const user = require('../models/userModel');
 
 // protect middleware for user validation
 // all the routes passing this middleware will have access to user info (variable = req.user) from which additional privilege validatoin can be performed

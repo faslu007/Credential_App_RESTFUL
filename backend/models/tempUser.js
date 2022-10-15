@@ -29,6 +29,9 @@ const tempUserSchema = mongoose.Schema(
         validator: validatorPackage.isEmail,
         message: 'Please provide a valid email',
       }},
+      password: {
+        type: String,
+        },
       // this regex works for the formats (123) 456-7890 or 123-456-7890
     phone: {
         type: String,
@@ -38,9 +41,9 @@ const tempUserSchema = mongoose.Schema(
         type: String,
         required: [true, 'Please add a password'],
         },
-    userRole: {
+    role: {
         type: String,
-        enum : ['User','Admin','SuperAdmin','ViewOnly'],
+        enum : ['User','Admin','ViewOnly'],
         required: [true, 'Please provide appropriate User Role'],
         },
     organization: {
@@ -61,7 +64,7 @@ const tempUserSchema = mongoose.Schema(
         type: String,
       },
 
-    createdAt: { type: Date, expires: '15m', default: Date.now }
+    createdAt: { type: Date, expires: '1d', default: Date.now }
     
   },
   {
