@@ -28,10 +28,10 @@ const accountSchema = mongoose.Schema({
         type: String,
         match: /^(\()?\d{3}(\))?(-|\s)?\d{3}(-|\s)\d{4}$/,
       },
-    inactiveStatus: {
+    active: {
         type: Boolean,
         required: false,
-        default: false
+        default: true
     }
 },
 {
@@ -39,8 +39,9 @@ const accountSchema = mongoose.Schema({
     }
 );
 
-// mongoose post hook to update the assignedUsers to its providers ..
-// .. so both the collection will have same assignedUsers 
+
+
+// mongoose post hook -- update the assignedUsers to its providers whenever assigned user info gets changed
 accountSchema.post('findOneAndUpdate', async function (doc, next){
     if(doc.assignedUsers){
         const addAssignedUsersToProvider = await Provider.updateMany({ 'account': doc._id }, {'assignedUsers': doc.assignedUsers})

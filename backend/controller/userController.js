@@ -123,7 +123,7 @@ const getMyInfo = asyncHandler( async (req, res) =>{
             const {_id, firstName, lastName, email, phone, role, 
                 organization, team, designation} = await User.findById(req.user.id)
                 
-            const allAccounts = await Account.find()
+            const allAccounts = await Account.find({active: true})
                     .select('accountName accountType providers')
                     .populate('providers', 'providerName')
             const allUsers = await User.find()

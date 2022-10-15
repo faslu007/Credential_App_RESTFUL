@@ -8,26 +8,33 @@ const providerSchema = mongoose.Schema({
     providerNPI: {
         type: Number,
     },
-    account: [{
+    account: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Account',
-    }],
+    },
     assignedUsers: [{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Account',
     }],
-    inactiveStatus: {
+    active: {
         type: Boolean,
         required: false,
-        default: false
+        default: true
     }
 },
 {
     timestamps: true,
     }
 );
+
+// providerSchema.virtual('newUsers', {
+//     ref: 'Account', // ref model to use
+//     localField: 'newUsers', // field in mealSchema
+//     foreignField: 'primaryContactName', // The field in meatSchema. 
+//   });
+
 
 
 module.exports = mongoose.model('Provider', providerSchema)

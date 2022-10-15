@@ -4,39 +4,39 @@ const User = require('../models/userModel');
 const Provider = require('../models/providerModel');
 const path = require("path");
 const { error } = require('console');
+const { type } = require('os');
 
 
 
-// @GET Accounts
+// @GET all Accounts
 // @Route Get api/accounts
 // @access private - Admin Only - Accounts Management
 const getAccounts = asyncHandler( async (req, res) => {
-    console.log(req.user)
-    if(req.user.role !== 'Admin') {
-        res.status(401)
-        throw new Error('User does not have privilege to access all accounts')
-    }
-    try {
-        const accounts = await Account.find()
-            .populate('assignedUsers', 'firstName lastName')
-            .populate('providers', 'providerName');
-        res.status(200).json(accounts);
-    } catch (error) {
-        res.status(404)
-        throw new Error('Error retrieving all accounts')
-    }
+        if(req.user.role !== 'Admin') {
+            res.status(401)
+            throw new Error('User does not have privilege to access all accounts')
+        }
+        try {
+            const accounts = await Account.find()
+                .populate('assignedUsers', 'firstName lastName')
+                .populate('providers', 'providerName');
+            res.status(200).json(accounts);
+        } catch (error) {
+            res.status(404)
+            throw new Error('Error retrieving all accounts')
+        }
 });
 
-// @Create Account
+// @Create an Account
 // @Route Post   api/accounts
-// @access private
+// @access private - Admin Only - Accounts Management
 const createAccount = asyncHandler(async (req, res) => {
         if(req.user.role != 'Admin'){
             res.status(400)
-            throw new Error('User does not have priviliage to create a new account, please contact you Administrator');
+            throw new Error('User does not have privilege to create a new account, please contact you Administrator');
         }
         const {accountName, accountType, assignedUsers, primaryContactName,
-                primaryContactPhone} = req.body;
+                primaryContactPhone } = req.body;
         if(!accountName || !accountType || !assignedUsers 
             || !primaryContactName || !primaryContactPhone) {
             res.status(400) 
@@ -52,6 +52,93 @@ const createAccount = asyncHandler(async (req, res) => {
         })
         
         res.status(200).json(account);
+});
+
+
+
+// @Update an Account
+// @Route Put api/accounts/:id
+// @access private - Admin Only - Accounts Management
+const updateAccount = asyncHandler( async (req, res) => {
+        
+            if(req.user.role !== 'Admin' ){
+                res.status(401)
+                throw new Error('User does not have privilege to update accounts')
+            }
+            
+            const {accountName, accountType, primaryContactName,
+                primaryContactPhone } = req.body;
+            if(!accountName || !accountType || !primaryContactName || !primaryContactPhone) {
+                res.status(401)
+                throw new Error('please add all fields')
+                }
+            
+            let activeStatus = req.body.activeStatus;
+            if(typeof(activeStatus) != Boolean) {
+                try {
+                    activeStatus = activeStatus.trim();
+                    activeStatus == 'true' ? activeStatus = true : null;
+                    activeStatus == 'false' ? activeStatus = false : null;
+                    activeStatus == true || false ? null : (function(){throw "error"}());
+                } catch (error) {
+                    res.status(401)
+                    throw new Error('Invalid input - Please provide either true or false as value')
+                }
+            }
+
+            try {
+                const updatedAccount = await Account.findOneAndUpdate(
+                    { '_id': req.params.id },
+                    { '$set': { 'accountName': accountName, 'accountType': accountType, 
+                                'primaryContactName': primaryContactName, 'primaryContactPhone': primaryContactPhone,
+                                'active': activeStatus }},
+                                {new: true, upsert: true})
+            res.status(200)
+            .json(updatedAccount)
+        } catch (error) {
+            res.status(501)
+            throw new Error('Error updating account information to database')
+        }
+    
+});
+
+// @Update Assigned users of the account
+// @Route Put api/accounts/updateAssignedUsers
+// @Access Private - Admin Only - Accounts Management 
+const updateAssignedUser = asyncHandler( async (req, res) => {
+        const { assignedUsers } = req.body;
+
+        const addUsersToAccount = await Account.findOneAndUpdate(
+                {_id: req.params.id},
+                { assignedUsers: assignedUsers},
+                { upsert: true, new: true}
+        ).select('assignedUsers')
+        .populate('assignedUsers', 'firstName lastName')
+
+        console.log(addUsersToAccount)
+
+        res.status(200).json(addUsersToAccount)
+        
+
+
+
+
+})
+
+
+// @Delete Accounts
+// @Route Delete api/accounts/:id
+// @access private
+// ||||||This module not completed|||||||
+const deleteAccounts = asyncHandler( async (req, res) => {
+    const account = await Account.findById(req.params.id);
+
+    if (!account) {
+        res.status(400) 
+        throw new Error('Account not found') 
+    }
+    const deleted = await Account.findByIdAndDelete(req.params.id);
+    res.status(200).json({message: `account is deleted of id ${req.params.id}`});
 });
 
 
@@ -76,89 +163,22 @@ const createProvider = asyncHandler( async (req, res) => {
             account: req.params.id
         });
         // save provider_ID to its Parent Account
-        const saveProviderIdToAccount = await Account.updateOne(
+        const saveProviderIdToAccount = await Account.findOneAndUpdate(
             { _id: req.params.id },
             { $push: { providers: provider.id } },
-            { upsert: true }
+            {   new: true, upsert: true, }
         );
-        // Pushing the users who has access to the Parent Account to the created account
-        const getUsers = await Account.find({_id: req.params.id}).select('assignedUsers');
-        let usersToPush = getUsers[0].assignedUsers;  // getUsers is an array of objects so index 0 has the users_id object, 
-        
-        const pushUsersToProvider = await Provider.updateOne(
+        const pushUsersToProvider = await Provider.findOneAndUpdate(
             { _id: provider._id },
-            {
-              $push: {
-                assignedUsers: {
-                   $each: usersToPush,
-                   $sort: { score: -1 },
-                   $slice: 3
-                }
-              }
-            },
-            { upsert: true }
-         )
-        res.status(200).json(provider);
-    } catch (error) {
-        throw new Error(error)
-    }
-}) 
+            { 'assignedUsers': saveProviderIdToAccount.assignedUsers },
+            { new: true, upsert: true }
+        ).populate('account', 'accountName')
 
-
-
-// @Update Accounts
-// @Route Put api/accounts/:id
-// @access private
-const updateAccounts = asyncHandler( async (req, res) => {
-    if(req.user.role !== 'Admin' ){
-        res.status(401)
-        throw new Error('User does not have privilege to update accounts')
-    }
-    try {
-        const updatedAccount1 = await Account.findOneAndUpdate(
-            { '_id': req.params.id },
-            { '$set': { 'accountName': req.body.accountName}},
-                        {new: true})
-
-        // const updatedAccount = await Account.findOneAndUpdate(
-        //     { '_id': req.params.id },
-        //     {
-        //         accountName: req.body.accountName
-        //     },
-        //     {
-        //       new: true,
-        //     }
-        // )
-        res.status(200).json(updatedAccount1)
-
-    } catch (error) {
-        res.sendStatus(401).json(error)
-    }
-    // const account = await Account.findById(req.params.id);
-    // if (!account) {
-    //     res.status(400) 
-    //     throw new Error('Account not found') 
-    // }
-
-
-    // const user = await User.findById(req.user.id)
-
-    // //check user
-    // if(!user) {
-    //     res.status(401)
-    //     throw new Error ('User not found');
-    // }
-
-    // // Makesure logged in user has priviliages
-    // if(account.user.toString() !== user.id) {
-    //     res.status(401) 
-    //     throw new Error ('User not autherized')
-    // }
-
-    // const updatedAccount = await Account.findByIdAndUpdate(req.params.id, req.body, {
-    //     new: true,
-    // } )
-});
+        res.status(200).json(pushUsersToProvider);
+} catch (error) {
+    throw new Error(error)
+}
+}); 
 
 
 
@@ -167,26 +187,13 @@ const updateAccounts = asyncHandler( async (req, res) => {
 // @access private 
 
 
-// @Delete Accounts
-// @Route Delete api/accounts/:id
-// @access private
-// ||||||This module not completed|||||||
-const deleteAccounts = asyncHandler( async (req, res) => {
-    const account = await Account.findById(req.params.id);
-
-    if (!account) {
-        res.status(400) 
-        throw new Error('Account not found') 
-    }
-    const deleted = await Account.findByIdAndDelete(req.params.id);
-    res.status(200).json({message: `account is deleted of id ${req.params.id}`});
-});
-
 
 module.exports = {
     getAccounts,
     createAccount,
-    updateAccounts,
+    updateAccount,
+    updateAssignedUser,
     deleteAccounts,
     createProvider 
 }
+
