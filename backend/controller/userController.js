@@ -125,7 +125,10 @@ const getMyInfo = asyncHandler( async (req, res) =>{
                 
             const allAccounts = await Account.find({active: true})
                     .select('accountName accountType providers')
-                    .populate('providers', 'providerName')
+                    .populate({ path: 'providers', 
+                                match: {active: true},
+                                select: 'providerName providerNPI'
+                            })
             const allUsers = await User.find()
                     .select('firstName lastName')
             res.status(200).json({
@@ -137,10 +140,12 @@ const getMyInfo = asyncHandler( async (req, res) =>{
             const {_id, firstName, lastName, email, phone, role, 
                 organization, team, designation} = await User.findById(req.user.id)
                 
-            const allAccounts = await Account.find({assignedUsers: req.user.id})
+            const allAccounts = await Account.find({assignedUsers: req.user.id, active: true})
                     .select('accountName accountType providers')
-                    .populate('providers', 'providerName')
-                
+                    .populate({ path: 'providers', 
+                                match: {active: true},
+                                select: 'providerName providerNPI'
+                            })
             res.status(200).json({
             id: _id,
             firstName, lastName, email, phone, role, organization, 

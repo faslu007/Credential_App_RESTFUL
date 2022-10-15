@@ -29,12 +29,5 @@ const providerSchema = mongoose.Schema({
     }
 );
 
-// providerSchema.virtual('newUsers', {
-//     ref: 'Account', // ref model to use
-//     localField: 'newUsers', // field in mealSchema
-//     foreignField: 'primaryContactName', // The field in meatSchema. 
-//   });
-
-
 
 module.exports = mongoose.model('Provider', providerSchema)

@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {getAccounts, createAccount, updateAccount, 
-        deleteAccounts, createProvider, updateAssignedUser } = require('../controller/accountsController');
+        deleteAccounts, createProvider, updateAssignedUser, 
+        updateProvider } = require('../controller/accountsController');
 const {protect} = require('../middleware/authMiddleware');
 const multer  = require('multer')
 const upload = multer()
@@ -14,6 +15,7 @@ router.post('/createProvider/:id', upload.none(), protect, createProvider)
 
 router.put('/:id', upload.none(), protect, updateAccount);
 router.put('/updateAssignedUsers/:id', upload.none(), protect, updateAssignedUser);
+router.put('/providerUpdate/:id', upload.none(), protect, updateProvider)
 
 router.delete('/:id', protect, deleteAccounts);
 

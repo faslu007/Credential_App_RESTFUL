@@ -3,8 +3,8 @@ const Account = require('../models/accountsModel');
 const User = require('../models/userModel');
 const Provider = require('../models/providerModel');
 const path = require("path");
-const { error } = require('console');
-const { type } = require('os');
+// const { error } = require('console');
+// const { type } = require('os');
 
 
 
@@ -79,13 +79,12 @@ const updateAccount = asyncHandler( async (req, res) => {
                     activeStatus = activeStatus.trim();
                     activeStatus == 'true' ? activeStatus = true : null;
                     activeStatus == 'false' ? activeStatus = false : null;
-                    activeStatus == true || false ? null : (function(){throw "error"}());
+                    typeof(activeStatus) == 'boolean' ? null : (function(){throw "error"}());
                 } catch (error) {
                     res.status(401)
                     throw new Error('Invalid input - Please provide either true or false as value')
                 }
             }
-
             try {
                 const updatedAccount = await Account.findOneAndUpdate(
                     { '_id': req.params.id },
@@ -107,39 +106,20 @@ const updateAccount = asyncHandler( async (req, res) => {
 // @Access Private - Admin Only - Accounts Management 
 const updateAssignedUser = asyncHandler( async (req, res) => {
         const { assignedUsers } = req.body;
-
-        const addUsersToAccount = await Account.findOneAndUpdate(
+        try {
+            const addUsersToAccount = await Account.findOneAndUpdate(
                 {_id: req.params.id},
                 { assignedUsers: assignedUsers},
                 { upsert: true, new: true}
-        ).select('assignedUsers')
-        .populate('assignedUsers', 'firstName lastName')
-
-        console.log(addUsersToAccount)
-
-        res.status(200).json(addUsersToAccount)
+            ).select('assignedUsers').populate('assignedUsers', 'firstName lastName')
+        res.status(200)
+        .json(addUsersToAccount)
         
-
-
-
-
+        } catch (error) {
+                res.status(500 )
+                throw new Error('Error updating information to database')
+            }
 })
-
-
-// @Delete Accounts
-// @Route Delete api/accounts/:id
-// @access private
-// ||||||This module not completed|||||||
-const deleteAccounts = asyncHandler( async (req, res) => {
-    const account = await Account.findById(req.params.id);
-
-    if (!account) {
-        res.status(400) 
-        throw new Error('Account not found') 
-    }
-    const deleted = await Account.findByIdAndDelete(req.params.id);
-    res.status(200).json({message: `account is deleted of id ${req.params.id}`});
-});
 
 
 //@Add new Provider / healthcareStaff to the existing Account /Group
@@ -181,11 +161,68 @@ const createProvider = asyncHandler( async (req, res) => {
 }); 
 
 
-
 // @Update Provider
-// @Route Put api/accounts/providerUpdate
+// @Route Put api/accounts/providerUpdate/:id
 // @access private 
+const updateProvider = asyncHandler(async (req, res) => {
+            if(req.user.role !== 'Admin'){
+                res.status(401)
+                throw new Error('User does not have privilege to update Provider info')
+            }
+            const { providerName, providerNPI } = req.body;
+            if(!providerName || !providerNPI){
+                res.status(400)
+                throw new Error('Please provide all the fields')
+            }
+            let activeStatus = req.body.activeStatus;
+            if(typeof(activeStatus) != Boolean) {
+                console.log(typeof(activeStatus))
+                try {
+                    activeStatus = activeStatus.trim();
+                    activeStatus == 'true' ? activeStatus = true : null;
+                    console.log(typeof(activeStatus))
+                    console.log(activeStatus)
+                    activeStatus == 'false' ? activeStatus = false : null;
+                    typeof(activeStatus) == 'boolean' ? null : (function(){throw "error"}());
+                } 
+                catch (error) {
+                    res.status(401)
+                    throw new Error('Invalid input - Please provide either true or false as value')
+                }
+            }
+            try {
+                const updateProvider = await Provider.findOneAndUpdate(
+                    {_id: req.params.id}, 
+                    { '$set': { 'providerName': providerName, 'providerNPI': providerNPI, 
+                                'active': activeStatus }},
+                                {new: true, upsert: true})
+                                .select(' providerName providerNPI active')
 
+                                console.log(updateProvider)
+                    res.status(202).json(updateProvider)  
+            } 
+            catch (error) {
+                res.status(501)
+                throw new Error('Error updating account information to database')
+            }
+})
+
+
+
+// @Delete Accounts
+// @Route Delete api/accounts/:id
+// @access private
+// ||||||This module not completed -  On hold till rest of the routes gets complete |||||||
+const deleteAccounts = asyncHandler( async (req, res) => {
+    const account = await Account.findById(req.params.id);
+
+    if (!account) {
+        res.status(400) 
+        throw new Error('Account not found') 
+    }
+    const deleted = await Account.findByIdAndDelete(req.params.id);
+    res.status(200).json({message: `account is deleted of id ${req.params.id}`});
+});
 
 
 module.exports = {
@@ -193,7 +230,8 @@ module.exports = {
     createAccount,
     updateAccount,
     updateAssignedUser,
+    updateProvider,
     deleteAccounts,
-    createProvider 
+    createProvider
 }
 

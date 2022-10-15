@@ -44,9 +44,23 @@ const accountSchema = mongoose.Schema({
 // mongoose post hook -- update the assignedUsers to its providers whenever assigned user info gets changed
 accountSchema.post('findOneAndUpdate', async function (doc, next){
     if(doc.assignedUsers){
-        const addAssignedUsersToProvider = await Provider.updateMany({ 'account': doc._id }, {'assignedUsers': doc.assignedUsers})
+        const addAssignedUsersToProvider = await Provider.updateMany(
+            { 'account': doc._id }, {'assignedUsers': doc.assignedUsers})
     }
     next()
 })
 
 module.exports = mongoose.model('Account', accountSchema)
+
+
+
+// Story.
+//   find(...).
+//   populate({
+//     path: 'fans',
+//     // filtering field, you can use mongoDB syntax
+//     match: { age: { $gte: 21 } },
+//     // Explicitly exclude `_id`, see http://bit.ly/2aEfTdB
+//     select: 'name -_id'
+//   }).
+//   exec();
