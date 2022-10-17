@@ -3,8 +3,8 @@ const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
 const Account = require('../models/accountsModel');
-const {sendOTP, sendUserTempPassword} = require('../middleware/otpMiddleware'); 
 const tempUser = require('../models/tempUser');
+const {sendOTP, sendUserTempPassword} = require('../middleware/otpMiddleware'); 
 
 
 // @Register superAdminAccount
@@ -118,6 +118,7 @@ const loginUser = asyncHandler( async (req, res) =>{
 // @Route Get api/users/getMyInfo
 // @access Private
 const getMyInfo = asyncHandler( async (req, res) =>{
+    console.log('hi')
     try {
         if(req.user.role == 'Admin'){
             const {_id, firstName, lastName, email, phone, role, 
@@ -141,10 +142,13 @@ const getMyInfo = asyncHandler( async (req, res) =>{
                 organization, team, designation} = await User.findById(req.user.id)
                 
             const allAccounts = await Account.find({assignedUsers: req.user.id, active: true})
-                    .select('accountName accountType providers')
+                    .select('accountName accountType providers assignedUsers')
                     .populate({ path: 'providers', 
                                 match: {active: true},
                                 select: 'providerName providerNPI'
+                            })
+                    .populate({ path: 'assignedUsers', 
+                                select: 'firstName lastName'
                             })
             res.status(200).json({
             id: _id,

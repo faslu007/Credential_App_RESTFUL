@@ -4,12 +4,7 @@ const Provider = require('../models/providerModel');
 
 // The Account schema
 const accountSchema = mongoose.Schema({
-    // accountName: {
-    //     type: String,
-    //     unique: [true, 'Another account already exists with the same name'],
-    //     required: [true, 'please add account name']
-    // } ,
-
+    
     accountName: {
         type: String, 
         required: true, 
@@ -19,8 +14,9 @@ const accountSchema = mongoose.Schema({
     },
     accountType: {
         type: String,
+        enum : ['Group','Facility'],
         required: [true, 'please add account type Facility / Group']
-    } ,
+    },
     providers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Provider',

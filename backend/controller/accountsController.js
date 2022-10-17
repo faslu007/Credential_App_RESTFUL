@@ -111,7 +111,7 @@ const updateAccount = asyncHandler( async (req, res) => {
 });
 
 // @Update Assigned users of the account
-// @Route Put api/accounts/updateAssignedUsers
+// @Route Put api/accounts/updateAssignedUsers/:id
 // @Access Private - Admin Only - Accounts Management 
 const updateAssignedUser = asyncHandler( async (req, res) => {
         const { assignedUsers } = req.body;
@@ -149,7 +149,8 @@ const createProvider = asyncHandler( async (req, res) => {
         const provider = await Provider.create({
             providerName: providerName,
             providerNPI: providerNPI,
-            account: req.params.id
+            account: req.params.id,
+            accountType: 'Provider'
         });
         // save provider_ID to its Parent Account
         const saveProviderIdToAccount = await Account.findOneAndUpdate(
@@ -157,6 +158,7 @@ const createProvider = asyncHandler( async (req, res) => {
             { $push: { providers: provider.id } },
             {   new: true, upsert: true, }
         );
+        // push all users who are assigned to the Parent account to its child Provider Model
         const pushUsersToProvider = await Provider.findOneAndUpdate(
             { _id: provider._id },
             { 'assignedUsers': saveProviderIdToAccount.assignedUsers },
@@ -165,8 +167,8 @@ const createProvider = asyncHandler( async (req, res) => {
 
         res.status(200).json(pushUsersToProvider);
 } catch (error) {
-    // unlike other validation unique property does not come with message parameter.... 
-            // ....so manually passing the error message 
+    // unlike other validations 'unique' does not provide user friendly error message.... 
+            // ....so manually passing the error message here
             error.message.includes('duplicate key error collection') ? (function(){throw new Error('Another Provider already exists with the same name')}()) : null;
             res.status(401)
             throw new Error ( error )
@@ -189,12 +191,9 @@ const updateProvider = asyncHandler(async (req, res) => {
             }
             let activeStatus = req.body.activeStatus;
             if(typeof(activeStatus) != Boolean) {
-                console.log(typeof(activeStatus))
                 try {
                     activeStatus = activeStatus.trim();
                     activeStatus == 'true' ? activeStatus = true : null;
-                    console.log(typeof(activeStatus))
-                    console.log(activeStatus)
                     activeStatus == 'false' ? activeStatus = false : null;
                     typeof(activeStatus) == 'boolean' ? null : (function(){throw "error"}());
                 } 
@@ -210,8 +209,6 @@ const updateProvider = asyncHandler(async (req, res) => {
                                 'active': activeStatus }},
                                 {new: true, upsert: true})
                                 .select(' providerName providerNPI active')
-
-                                console.log(updateProvider)
                     res.status(202).json(updateProvider)  
             } 
             catch (error) {
@@ -236,6 +233,16 @@ const deleteAccounts = asyncHandler( async (req, res) => {
     const deleted = await Account.findByIdAndDelete(req.params.id);
     res.status(200).json({message: `account is deleted of id ${req.params.id}`});
 });
+
+
+
+
+
+
+
+
+
+
 
 
 module.exports = {

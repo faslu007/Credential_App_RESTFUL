@@ -23,6 +23,11 @@ const providerSchema = mongoose.Schema({
         required: true,
         ref: 'Account',
     }],
+    accountType: {
+        type: String,
+        default: 'Provider',
+        required: [true, 'please add account type Facility / Group']
+    } ,
     active: {
         type: Boolean,
         required: false,

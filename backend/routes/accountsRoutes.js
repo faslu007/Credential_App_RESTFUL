@@ -3,12 +3,17 @@ const router = express.Router();
 const {getAccounts, createAccount, updateAccount, 
         deleteAccounts, createProvider, updateAssignedUser, 
         updateProvider } = require('../controller/accountsController');
-const {protect} = require('../middleware/authMiddleware');
+
+const { getAccountsListForSideBar } = require('../controller/accountsSideBarController')
+
+        const {protect} = require('../middleware/authMiddleware');
+
 const multer  = require('multer')
 const upload = multer()
 
 //API --- /api/accounts/
 router.get('/', protect, getAccounts);
+router.get('/getAccountsListForSideBar', protect, getAccountsListForSideBar);
 
 router.post('/', upload.none(), protect, createAccount);
 router.post('/createProvider/:id', upload.none(), protect, createProvider)

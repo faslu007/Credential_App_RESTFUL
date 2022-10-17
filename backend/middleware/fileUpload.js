@@ -7,11 +7,14 @@ const {GridFsStorage} = require('multer-gridfs-storage');
 const router = require('express').Router();
 const url = process.env.MONGO_URI;
 
+// Files are uploaded to MongoDB GridFS storage
+
 // Connection for Grid-FS FileStorage
   const conn = mongoose.createConnection(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
+
 
 // init gfs
     let gfs;
@@ -22,6 +25,7 @@ const url = process.env.MONGO_URI;
         bucketName: "fileUploadsCredApp"
       });
     });
+
 
 // storing the file after validations and returns fileInfo with id to the next function
 // need revision on creating fileID with Crypto - seems like its not needed
@@ -51,6 +55,7 @@ const url = process.env.MONGO_URI;
       }
     });
   
+
   // multer library to deal with parsing the files
     const store = multer({
       storage,
@@ -78,8 +83,9 @@ const url = process.env.MONGO_URI;
 
         // |||need to make this as a global middleware where any routes can have access to this|||
   // Middleware to call file upload feature from the routes file
-  const uploadMiddleware = (req, res, next) => {
-    const upload = store.single('file');
+  const uploadMiddleware = async (req, res, next) => {
+    const upload =  store.single('file');
+
     upload(req, res, function (err) {
       if (err instanceof multer.MulterError) {
         return res.status(400).json({'message': 'File too large', 'userNotes': req.body.notes});
