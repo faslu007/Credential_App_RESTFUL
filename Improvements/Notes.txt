@@ -1,0 +1,16 @@
+Client Side Improvements
+
+    Accounts SideBar
+        Accounts Sidebar will have its own GET Request to get all the accounts user has access to   
+                This will return - _Id, Account Name, Account Types
+
+        The GET request will return all the data pertains to that account (In-network, OON, OpenIssues, PortalLogins)
+            ...and it can be stored in a state - so while accessing each Tab subsequent get request is not necessary
+
+          
+Server Side 
+
+    Create a new route to consume the GET Request from the Account-Sidebar
+        If this properly implimented then Accounts, Providers & Users Date does not need to send with 
+            ...the initial Payload (GetMyInfo)
+

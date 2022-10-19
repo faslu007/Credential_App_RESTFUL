@@ -20,13 +20,14 @@ app.use(express.json());
 // for parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true })); 
 
-// app.use(upload.array()); 
+// app.use(upload.array());
+
 app.use(express.static('public'));
 
-// compress the req & res data transfer
+// compress the res data transfer
 app.use(compression())
 
-// cors - cross origine sharing - (http-reqest)
+// cors - cross origin sharing - (http-request)
 app.use(cors())
 
 

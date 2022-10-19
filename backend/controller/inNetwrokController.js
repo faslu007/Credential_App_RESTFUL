@@ -12,7 +12,7 @@ const InNetwork = require('../models/inNetworkModel');
 // @Access Private - Admin && User who are assigned to the account can create a new one...     
 const createInNetwork = asyncHandler(async (req, res) => {
         const {insuranceName, assignedUsers, 
-                trackingID, dueDate, description } = req.body;
+                trackingID, dueDate } = req.body;
                 
         if(!insuranceName || !assignedUsers || !dueDate ) {
                 res.status(400)
@@ -20,8 +20,8 @@ const createInNetwork = asyncHandler(async (req, res) => {
             }
         
         if (req.user.role == 'ViewOnly') {
-            res.status(401)
-            throw new Error('You do not have permission to create new Insurance/payer')
+                res.status(401)
+                throw new Error('You do not have permission to create new Insurance/payer')
         }
 
         let isAccountAssigned;
@@ -35,7 +35,7 @@ const createInNetwork = asyncHandler(async (req, res) => {
             const  provider = await Provider.findOne({_id: req.params.id}).select('assignedUsers') 
             provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = true : isProviderAssigned = false;
         }
-
+        // Proper error message not going to client - need a little tweak
         isAccountAssigned || isProviderAssigned == true ? null : (function(){throw new Error
             ('You do not have permission to add Insurance to this Account / Provider')}())
         
@@ -48,7 +48,7 @@ const createInNetwork = asyncHandler(async (req, res) => {
                     account: req.params.id,
                     dueDate: dueDate,
                 });
-
+                
                 // create notes for account created eg: James Smith created new Insurance Molina Medicaid KY
                 const notes  = await InNetwork.findByIdAndUpdate({_id: insurance.id },
                     { 
@@ -69,6 +69,7 @@ const createInNetwork = asyncHandler(async (req, res) => {
                 res.status(500).json(error)
             }
         }
+
         if(isProviderAssigned){
             try {
                 const insurance = await InNetwork.create({
@@ -125,22 +126,23 @@ const updateInNetwork = asyncHandler(async (req, res) => {
         }
         
         try {
+            // |||| Need to code: check user has privilege to update the requesting account ||||
             // get Old version of the inNetwork
             const inNetwork = await InNetwork.findById(req.params.id).select('status dueDate active')
             
             const updatedInNetwork = await InNetwork.findOneAndUpdate(
                 // find parameter : requesting user match its assignedUser
-            {_id: req.params.id, assignedUsers: req.user.id},
-                // the Update
-            { '$set': { 'insuranceName': insuranceName, 'status': status, 'assignedUsers': assignedUsers,
-                        'trackingID': trackingID, 'dueDate': dueDate, 'active': active,
-                        'description': description}},
-                            {new: true, upsert: true});
+                {_id: req.params.id, assignedUsers: req.user.id},
+                    // the Update
+                { '$set': { 'insuranceName': insuranceName, 'status': status, 'assignedUsers': assignedUsers,
+                            'trackingID': trackingID, 'dueDate': dueDate, 'active': active,
+                            'description': description}},
+                                {new: true, upsert: true}).select('-notes');
 
             // create notes for account updated eg: James Smith has changes the status to Submitted
             let note;
             if( inNetwork.status !== updatedInNetwork.status ) {
-                    note = `${req.user.firstName +' '+ req.user.lastName} has made changed the status ${'from ' + inNetwork.status +' to ' + updatedInNetwork.status}`
+                    note = `${req.user.firstName +' '+ req.user.lastName} has made changes to the status ${'from ' + inNetwork.status +' to ' + updatedInNetwork.status}`
                     console.log(note)
                     const notes  = await InNetwork.findByIdAndUpdate({_id: req.params.id },
                         { 
@@ -251,7 +253,6 @@ const createComment = asyncHandler(async (req, res) => {
         // if any file got uploaded then updating the file id along with the comment/notes
     //     const { file } = req;
             const { id } = file;
-
                 if(!req.body.note || !req.body.status || !req.body.dueDate || !req.body.assignedUsers) {  // form validation
                                 res.status(400) 
                                 throw new Error ('Please add Notes');
@@ -281,10 +282,10 @@ const createComment = asyncHandler(async (req, res) => {
                                 month: '2-digit',
                                 day: '2-digit',
                             })
-
+                            
                 let isStatusOrDateChanged; //flag for the below turnery
                 prevStatus != req.body.status || prevDueDate != req.body.dueDate ? isStatusOrDateChanged = true : isStatusOrDateChanged = false;
-
+                
                 if( !isStatusOrDateChanged ){
                     note.notes.slice(-2)
                     const lastNotes = {_id: note._id, status: note.status, dueDate: note.dueDate, notes: note.notes.slice(-1)};
@@ -293,34 +294,37 @@ const createComment = asyncHandler(async (req, res) => {
                     .json(lastNotes)
                 }
         
-        // update the status and assigned users, if any changes requested... 
-        // ...User can change the In-network Insurance status / assigned users while adding a comment
-        if( isStatusOrDateChanged ) {
-            const changesSaved = await InNetwork.findOneAndUpdate(
-                { '_id': req.params.id },
-                { '$set': { 'status': req.body.status, 
-                            'dueDate': req.body.dueDate, 
-                            'assignedUsers': req.body.assignedUsers,
-                            }},
-                            {new: true, upsert: true})
+                // update the status and assigned users, if any changes requested... 
+                // ...User can change the In-network Insurance status / assigned users while adding a comment
+                if( isStatusOrDateChanged ) {
+                    const changesSaved = await InNetwork.findOneAndUpdate(
+                        { '_id': req.params.id },
+                        { '$set': { 'status': req.body.status, 
+                                    'dueDate': req.body.dueDate, 
+                                    'assignedUsers': req.body.assignedUsers,
+                                    }},
+                                    {new: true, upsert: true})
+
                             
-            if( changesSaved ) {
-                // creates new comment / note for changes made
-                const notes  = await InNetwork.findByIdAndUpdate({_id: req.params.id },
-                    { $push: {
-                            notes: {
-                                user : req.user.id,
-                                commenterName: `${req.user.firstName} ${req.user.lastName}`,
-                                note : `${req.user.firstName + ' '+ req.user.lastName}  has changed the status to ${req.body.status} from ${prevStatus}  &  Due Date to ${req.body.dueDate} from ${prevDueDate}`,
-                            }
-                        } 
-                    },
-                    { new: true, upsert: true })
-                    .select('status dueDate notes')
-                    
-                    const sendUpdatesToUser = {_id: notes._id, status: notes.status, dueDate: notes.dueDate, notes: notes.notes.slice(-2)};
-                    res.status(200).json(sendUpdatesToUser)
-                    }
+                if( changesSaved ) {
+                    // creates new comment / note for changes made
+                    const notes  = await InNetwork.findByIdAndUpdate({_id: req.params.id },
+                        { $push: {
+                                notes: {
+                                    user : req.user.id,
+                                    commenterName: `${req.user.firstName} ${req.user.lastName}`,
+                                    note : `${req.user.firstName + ' '+ req.user.lastName}  has changed the status to ${req.body.status} from ${prevStatus}  &  Due Date to ${req.body.dueDate} from ${prevDueDate}`,
+                                }
+                            } 
+                        },
+                        { new: true, upsert: true })
+                        .select('status dueDate notes')
+                        
+                        const sendUpdatesToUser = {_id: notes._id, status: notes.status, dueDate: 
+                                                    notes.dueDate, notes: notes.notes.slice(-2)};
+                                                    
+                        res.status(200).json(sendUpdatesToUser)
+                        }
     } 
 } catch (error) {
     res.status(401)

@@ -1,9 +1,12 @@
 const express = require ('express');
 const path = require('path')
 const router = express.Router();
+
 const {registerSuperAdmin, loginUser, getMyInfo, getAllUsers, 
        registerUser, verifyOTP, resetPassword, updateUser} = require('../controller/userController') 
+
 const {protect} = require('../middleware/authMiddleware')
+
 const multer  = require('multer');
 const { route } = require('./accountsRoutes');
 const upload = multer()

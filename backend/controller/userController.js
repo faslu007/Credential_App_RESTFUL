@@ -293,7 +293,7 @@ const resetPassword = asyncHandler(async (req, res) => {
                         designation: foundUser.designation,
                     })
                     if(user){
-                        // delete userInfo from temporary db
+                        // delete userInfo from temporary collection
                         const deleteTempUser = await tempUser.findOneAndDelete({email});
                             }
                     res.status(200).json({

@@ -60,7 +60,6 @@ const createAccount = asyncHandler(async (req, res) => {
             res.status(401)
             throw new Error ( error )
         }
-        
 });
 
 
@@ -233,15 +232,6 @@ const deleteAccounts = asyncHandler( async (req, res) => {
     const deleted = await Account.findByIdAndDelete(req.params.id);
     res.status(200).json({message: `account is deleted of id ${req.params.id}`});
 });
-
-
-
-
-
-
-
-
-
 
 
 
