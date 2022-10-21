@@ -56,9 +56,11 @@ const openIssuesSchema = mongoose.Schema({
         dueDate: {
             type: Date,
           },
-        inactive: {
-            type: { type: Boolean, default: false },
-          },
+          active: {
+            type: Boolean,
+            required: false,
+            default: true
+        },
         comments: {
             type: String,
           },

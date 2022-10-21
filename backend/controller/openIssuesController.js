@@ -29,71 +29,70 @@ const createOpenIssues = asyncHandler(async (req, res) => {
         const  provider = await Provider.findOne({_id: req.params.id}).select('assignedUsers') 
         provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = true : isProviderAssigned = false;
     };
-    // Proper error message not going to client - need a little tweak
+  
     isAccountAssigned || isProviderAssigned == true ? null : (function(){throw new Error
         ('You do not have permission to add Insurance to this Account / Provider')}())
     
     if(isAccountAssigned){
         try {
             const issue = await  openIssue.create({
-                issueName: issueName,
-                status: status,
-                users: assignedUsers,
-                trackingID: trackingID,
-                dueDate: dueDate,
-                account: req.params.id,
-            });
-        
-            if(issue) {
-                const makeNote = await openIssue.findByIdAndUpdate({id: issue._id},
-                    { 
-                        $push: {
-                            notes: {
-                                user : req.user.id,
-                                commenterName: `${req.user.firstName} ${req.user.lastName}`,
-                                note : `${req.user.firstName} ${req.user.lastName} has created a new ticket / issue ${insurance.issueName}`,
-                                
-                            }
+                                                    issueName: issueName,
+                                                    status: status,
+                                                    users: assignedUsers,
+                                                    trackingID: trackingID,
+                                                    dueDate: dueDate,
+                                                    account: req.params.id,
+                                                });
+            
+        if(issue) {
+            const note  = await openIssue.findByIdAndUpdate({_id: issue.id },
+                { 
+                    $push: {
+                        notes: {
+                            user : req.user.id,
+                            commenterName: `${req.user.firstName} ${req.user.lastName}`,
+                            note : `${req.user.firstName} ${req.user.lastName} created new Insurance ${issue._id}`,
+                            
                         }
-                    },
-                    {new:true, upsert: true}        
-                    ).select('-notes')
-                
-                res.status(200).json(makeNote)
+                    }
+                },
+                {new:true, upsert: true}
+                ).select('-notes')
+                res.status(200).json(note)
             }
         } catch (error) {
             res.status(500)
             throw new Error('Error saving the ticket / open issues to the database!')
         }
     };
-
+    
     if(isProviderAssigned){
         try {
             const issue = await  openIssue.create({
-                issueName: issueName,
-                status: status,
-                users: assignedUsers,
-                trackingID: trackingID,
-                dueDate: dueDate,
-                provider: req.params.id,
-            });
+                                                    issueName: issueName,
+                                                    status: status,
+                                                    users: assignedUsers,
+                                                    trackingID: trackingID,
+                                                    dueDate: dueDate,
+                                                    provider: req.params.id,
+                                                });
 
             if(issue) {
-                const makeNote = await openIssue.findByIdAndUpdate({id: issue._id},
+                const note  = await openIssue.findByIdAndUpdate({_id: issue.id },
                     { 
                         $push: {
                             notes: {
                                 user : req.user.id,
                                 commenterName: `${req.user.firstName} ${req.user.lastName}`,
-                                note : `${req.user.firstName} ${req.user.lastName} has created a new ticket / issue ${insurance.issueName}`,
+                                note : `${req.user.firstName} ${req.user.lastName} created new Insurance ${issue._id}`,
                                 
                             }
                         }
                     },
-                    {new:true, upsert: true}        
+                    {new:true, upsert: true}
                     ).select('-notes')
                 
-                res.status(200).json(makeNote)
+                res.status(200).json(note)
             }
         } catch (error) {
             res.status(500)

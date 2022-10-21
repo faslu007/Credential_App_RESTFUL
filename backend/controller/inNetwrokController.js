@@ -134,8 +134,6 @@ const updateInNetwork = asyncHandler(async (req, res) => {
         }
         
         try {
-            // |||| Need to code: check user has privilege to update the requesting account ||||
-            // get Old version of the inNetwork
             const inNetwork = await InNetwork.findById(req.params.id)
                             .select('status dueDate active account provider')
                             .populate(
@@ -176,7 +174,7 @@ const updateInNetwork = asyncHandler(async (req, res) => {
                             
                                 {new: true, upsert: true}).select('-notes');
 
-            // create notes for account updated eg: James Smith has changes the status to Submitted
+            // create notes for if status has changes: James Smith has changes the status to Submitted
             let note;
             if( inNetwork.status !== updatedInNetwork.status ) {
                     note = `${req.user.firstName +' '+ req.user.lastName} has made changes to the status ${'from ' + inNetwork.status +' to ' + updatedInNetwork.status}`
