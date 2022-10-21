@@ -3,6 +3,7 @@ const Account = require('../models/accountsModel');
 const Provider = require('../models/providerModel');
 const User = require('../models/userModel');
 const InNetwork = require('../models/inNetworkModel');
+const { exists } = require('../models/userModel');
 
 
 
@@ -18,26 +19,33 @@ const createInNetwork = asyncHandler(async (req, res) => {
                 res.status(400)
                 throw new Error('Please add all the required fields')
             }
-        
+            
         if (req.user.role == 'ViewOnly') {
                 res.status(401)
                 throw new Error('You do not have permission to create new Insurance/payer')
         }
-
+        
         let isAccountAssigned;
         if(req.user.role == 'Admin' || 'User') {
             const  account = await Account.findOne({_id: req.params.id}).select('assignedUsers')
             account && account.assignedUsers.includes(req.user.id) ? isAccountAssigned = account : isAccountAssigned = false; 
+            
         }
         
         let isProviderAssigned;
         if(req.user.role.includes('Admin' || 'User') &&   !isAccountAssigned){
             const  provider = await Provider.findOne({_id: req.params.id}).select('assignedUsers') 
-            provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = true : isProviderAssigned = false;
+            console.log(provider)
+            console.log(req.user._id)
+            provider && provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = provider : isProviderAssigned = false;
         }
+        
         // Proper error message not going to client - need a little tweak
-        isAccountAssigned || isProviderAssigned == true ? null : (function(){throw new Error
-            ('You do not have permission to add Insurance to this Account / Provider')}())
+        if(!isAccountAssigned && !isProviderAssigned){
+            res.status(401)
+            throw new Error('You do not have access to this account or the requesting account does not exits')
+        }
+
         
         if(isAccountAssigned){
             try {
@@ -118,7 +126,7 @@ const updateInNetwork = asyncHandler(async (req, res) => {
         }
         const { insuranceName, status, assignedUsers, trackingID, dueDate, 
                 active, description } = req.body;
-        
+            
         if(!insuranceName || !status || !assignedUsers || !trackingID
             || !dueDate || !active || !description){
                 res.status(400)
@@ -128,22 +136,51 @@ const updateInNetwork = asyncHandler(async (req, res) => {
         try {
             // |||| Need to code: check user has privilege to update the requesting account ||||
             // get Old version of the inNetwork
-            const inNetwork = await InNetwork.findById(req.params.id).select('status dueDate active')
+            const inNetwork = await InNetwork.findById(req.params.id)
+                            .select('status dueDate active account provider')
+                            .populate(
+                            {
+                                path: 'account',
+                                select: 'assignedUsers'
+                            })
+                            .populate(
+                            {
+                                path: 'provider',
+                                select: 'assignedUsers'
+                            });
+                            // this needs rework
             
+            let isAccountAssigned;
+            if(inNetwork.account){
+                
+                inNetwork.account.assignedUsers.includes(req.user._id) == true ? isAccountAssigned = true : isAccountAssigned = false;
+            }
+            
+            let isProviderAssigned;
+            if(inNetwork.provider){
+                
+                inNetwork.provider.assignedUsers.includes(req.user.id) == true ? isProviderAssigned = true : isProviderAssigned = false
+            }
+            
+            if( !isAccountAssigned && !isProviderAssigned ) {
+                res.status(401)
+                throw new Error('You do not have access to edit this account')
+            }
+            // the Update
             const updatedInNetwork = await InNetwork.findOneAndUpdate(
-                // find parameter : requesting user match its assignedUser
-                {_id: req.params.id, assignedUsers: req.user.id},
-                    // the Update
-                { '$set': { 'insuranceName': insuranceName, 'status': status, 'assignedUsers': assignedUsers,
-                            'trackingID': trackingID, 'dueDate': dueDate, 'active': active,
-                            'description': description}},
+                                            {_id: req.params.id},
+                                            { '$set': { 'insuranceName': insuranceName, 'status': status,
+                                                        'trackingID': trackingID, 'dueDate': dueDate, 'active': active,
+                                                        'description': description}, "assignedUsers": req.body.assignedUsers,
+                                            },
+                            
                                 {new: true, upsert: true}).select('-notes');
 
             // create notes for account updated eg: James Smith has changes the status to Submitted
             let note;
             if( inNetwork.status !== updatedInNetwork.status ) {
                     note = `${req.user.firstName +' '+ req.user.lastName} has made changes to the status ${'from ' + inNetwork.status +' to ' + updatedInNetwork.status}`
-                    console.log(note)
+
                     const notes  = await InNetwork.findByIdAndUpdate({_id: req.params.id },
                         { 
                             $push: {

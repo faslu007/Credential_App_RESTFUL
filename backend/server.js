@@ -35,9 +35,11 @@ app.use(cors())
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/accounts', require('./routes/accountsRoutes'));
 app.use('/api/inNetwork', require('./routes/inNetworkRoutes'));
+app.use('/api/openIssues', require('./routes/openIssuesRoutes'))
 
 // error handler middleware - return structured error message
 app.use(errorHandler);
+
 
 
 

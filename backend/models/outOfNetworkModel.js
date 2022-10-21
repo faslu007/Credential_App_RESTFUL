@@ -29,44 +29,44 @@ const notesSchema = mongoose.Schema({
 
 // In-Network schema (to contain all the in-network insurance list of the account and add its notes for action taken)
 const outOfNetworkSchema = mongoose.Schema({
-    insuranceName: {
-        type: String,
-        required: [true, 'please add insurance name']
-    } ,
-    status: {
-        type: String,
-        required: [true, 'please add account type Facility / Group']
-    } ,
-    user: [{
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'User',
-      }],
-    account: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Account',
-      },
-    provider: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Provider',
-      }, 
-    trackingID: {
-        type: String,
-      },
-    dueDate: {
-        type: Date,
-      },
-    inactive: {
-        type: { type: Boolean, default: false },
-      },
-    comments: {
-        type: String,
-      },
-    notes: [notesSchema],
-},
-{
-    timestamps: true,
-    }
+        insuranceName: {
+            type: String,
+            required: [true, 'please add insurance name']
+        } ,
+        status: {
+            type: String,
+            required: [true, 'please add account type Facility / Group']
+        } ,
+        user: [{
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'User',
+          }],
+        account: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Account',
+          },
+        provider: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Provider',
+          }, 
+        trackingID: {
+            type: String,
+          },
+        dueDate: {
+            type: Date,
+          },
+        inactive: {
+            type: { type: Boolean, default: false },
+          },
+        comments: {
+            type: String,
+          },
+        notes: [notesSchema],
+    },
+    {
+        timestamps: true,
+        }
 )
 
 module.exports = mongoose.model('OutOfNetwork', outOfNetworkSchema)

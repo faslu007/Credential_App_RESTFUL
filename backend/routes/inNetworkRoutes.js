@@ -3,7 +3,11 @@ const router = express.Router();
 const { createInNetwork, updateInNetwork,
         createComment, getComments, getAllInNetworks,  } = require('../controller/inNetwrokController') 
 const {protect} = require('../middleware/authMiddleware')
-const {uploadMiddleware, getUploadedFile, uploadProgress_Middleware} = require('../middleware/fileUpload')
+
+const { uploadMiddleware, 
+        getUploadedFile, 
+        uploadProgress_Middleware } = require('../middleware/fileUpload')
+
 const multer  = require('multer')
 const upload = multer()
 
