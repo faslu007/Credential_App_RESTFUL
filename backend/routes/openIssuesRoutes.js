@@ -5,11 +5,13 @@ const {uploadMiddleware, getUploadedFile, uploadProgress_Middleware} = require('
 const multer  = require('multer')
 const upload = multer();
 
-const { createOpenIssues } = require('../controller/openIssuesController');
+const { createOpenIssues,
+        updateOpenIssues } = require('../controller/openIssuesController');
 
 
 //API -- /api/openIssues
 router.post('/:id', protect, upload.none(), createOpenIssues);
+router.put('/:id', protect, upload.none(), updateOpenIssues);
 
 
 module.exports = router;

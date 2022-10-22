@@ -12,7 +12,7 @@ const {sendOTP, sendUserTempPassword} = require('../middleware/otpMiddleware');
 // @access Public
 const registerSuperAdmin = asyncHandler( async (req, res) =>{
     const {firstName, lastName, email, phone,
-         password, organization, team, designation} = req.body
+        password, organization, team, designation} = req.body
     // form validation
     if (!firstName || !lastName || !phone || !organization
         || !email || !password || !team || !designation){

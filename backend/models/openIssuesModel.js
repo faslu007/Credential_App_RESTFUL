@@ -61,9 +61,6 @@ const openIssuesSchema = mongoose.Schema({
             required: false,
             default: true
         },
-        comments: {
-            type: String,
-          },
         notes: [notesSchema],
     },
     {

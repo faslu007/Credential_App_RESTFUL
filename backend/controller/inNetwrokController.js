@@ -35,8 +35,6 @@ const createInNetwork = asyncHandler(async (req, res) => {
         let isProviderAssigned;
         if(req.user.role.includes('Admin' || 'User') &&   !isAccountAssigned){
             const  provider = await Provider.findOne({_id: req.params.id}).select('assignedUsers') 
-            console.log(provider)
-            console.log(req.user._id)
             provider && provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = provider : isProviderAssigned = false;
         }
         
@@ -275,8 +273,9 @@ const createComment = asyncHandler(async (req, res) => {
                     },
                     { new: true, upsert: true })
                     .select('status dueDate notes')
+                    .where('notes').slice(-2);
                     
-                    const sendUpdatesToUser = {_id: notes._id, status: notes.status, dueDate: notes.dueDate, notes: notes.notes.slice(-2)};
+                    const sendUpdatesToUser = {_id: notes._id, status: notes.status, dueDate: notes.dueDate, notes: notes.notes};
                     res.status(200).json(sendUpdatesToUser)
                     }
         } 
@@ -300,7 +299,7 @@ const createComment = asyncHandler(async (req, res) => {
                             notes: {
                                 user : req.user.id,
                                 commenterName: req.user.name,
-                                note : req.body.notes,
+                                note : req.body.note,
                                 fileID: id,
                                 fileName: file.originalname
                             }
