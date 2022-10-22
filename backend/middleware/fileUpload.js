@@ -43,7 +43,7 @@ const url = process.env.MONGO_URI;
               filename: file.originalname,
               bucketName: "fileUploadsCredApp",
               metadata: {
-                uploader: req.user.name,
+                uploader: `${req.user.firstName} ${req.user.lastName}`,
                 fileIds: ids,
               },
             };
@@ -84,23 +84,42 @@ const url = process.env.MONGO_URI;
         // |||need to make this as a global middleware where any routes can have access to this|||
   // Middleware to call file upload feature from the routes file
   const uploadMiddleware = async (req, res, next) => {
+    
     const upload =  store.single('file');
 
     upload(req, res, function (err) {
-      if (err instanceof multer.MulterError) {
-        return res.status(400).json({'message': 'File too large', 'userNotes': req.body.notes});
-      } else if (err) {
-        // check if filetype error occurred
-        if (err === 'filetype') return res.status(400).json({'message': 'File type not supported: please upload jpeg | png | pdf | tiff', 'userNotes': req.body.notes});
-        // An unknown error occurred when uploading.
-        return res.sendStatus(500);
-      }
-      // all good, proceed to next middleware to store the comment / note
-      next();
-    });
+          if (err instanceof multer.MulterError) {
+            return res.status(400).json({'message': 'File too large', 'userNotes': req.body.notes});
+          } else if (err) {
+            // check if filetype error occurred
+            if (err === 'filetype') return res.status(400).json({'message': 'File type not supported: please upload jpeg | png | pdf | tiff', 'userNotes': req.body.notes});
+            // An unknown error occurred when uploading.
+            return res.sendStatus(500);
+          }
+          // all good, proceed to next middleware to store the comment / note
+          next();
+        });
+
+
   };
 
-  
+    const basicFormValidation = (req) => {
+          let validationResult;
+          if(req.route.path == '/inNetworkNotes/:id'){
+            if(req.user.role == 'ViewOnly'){
+              validationResult = false;
+              
+          };
+
+          if(!req.body.note || !req.body.status || !req.body.dueDate || !req.body.assignedUsers) {  // form validation
+              validationResult = false;
+            };
+          };
+          console.log(req.body)
+          console.log(validationResult)
+          return validationResult;
+    } 
+    
   // need to do user privilege validation
 // middleware to send files back to the Users
 const getUploadedFile = async ({ params: { id } }, res) => {

@@ -118,7 +118,6 @@ const loginUser = asyncHandler( async (req, res) =>{
 // @Route Get api/users/getMyInfo
 // @access Private
 const getMyInfo = asyncHandler( async (req, res) =>{
-    console.log('hi')
     try {
         if(req.user.role == 'Admin'){
             const {_id, firstName, lastName, email, phone, role, 

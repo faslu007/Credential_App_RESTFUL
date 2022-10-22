@@ -15,12 +15,12 @@ const upload = multer()
 router.post('/:id', protect, upload.none(), createInNetwork);
 router.put('/:id', protect, upload.none(), updateInNetwork)
 
-router.post('/notes/:id', protect, uploadProgress_Middleware, uploadMiddleware, createComment)
+router.post('/inNetworkNotes/:id', protect, uploadProgress_Middleware, uploadMiddleware, createComment)
 
 router.get('/:id', protect, getAllInNetworks)
 
 
-router.get('/notes/:id', protect, getComments)
+router.get('/inNetworkNotes/:id', protect, getComments)
 router.get('/notes/uploads/:id', protect, getUploadedFile) // Note: should be requested with fileID in the params
 
 

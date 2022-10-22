@@ -201,18 +201,18 @@ const updateInNetwork = asyncHandler(async (req, res) => {
 })
 
 // @Create Comment or notes to in-network insurances
-// @Route POST   api/inNetwork/notes - Admins & Users who are assigned can CreateNotes
+// @Route POST   api/inNetwork/inNetworkNotes/:id - Admins & Users who are assigned can CreateNotes
 // @access private - Admin and Assigned users can Create Notes
 // this evokes after uploading file if user uploaded any
 // this will take file, note, status, assignedUsers & dueDate
 const createComment = asyncHandler(async (req, res) => {
-            
             if(!req.body.note || !req.body.status || !req.body.dueDate || !req.body.assignedUsers) {  // form validation
                 res.status(400) 
                 throw new Error ('Please add Notes');
             } 
             
             let { file } = req;
+            
             if(!file) { // if file not uploaded runs the below code
                 // add comment to in-network notes schema
                 try {
@@ -286,6 +286,7 @@ const createComment = asyncHandler(async (req, res) => {
     } else {
         // if any file got uploaded then updating the file id along with the comment/notes
     //     const { file } = req;
+    
             const { id } = file;
                 if(!req.body.note || !req.body.status || !req.body.dueDate || !req.body.assignedUsers) {  // form validation
                                 res.status(400) 
@@ -316,7 +317,6 @@ const createComment = asyncHandler(async (req, res) => {
                                 month: '2-digit',
                                 day: '2-digit',
                             })
-                            
                 let isStatusOrDateChanged; //flag for the below turnery
                 prevStatus != req.body.status || prevDueDate != req.body.dueDate ? isStatusOrDateChanged = true : isStatusOrDateChanged = false;
                 
