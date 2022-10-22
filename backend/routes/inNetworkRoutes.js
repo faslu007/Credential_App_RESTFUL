@@ -1,7 +1,7 @@
 const express = require ('express');
 const router = express.Router();
 const { createInNetwork, updateInNetwork,
-        createComment, getComments, getAllInNetworks,  } = require('../controller/inNetwrokController') 
+        createComment, getCommentsOfInNetwork, getAllInNetworks,  } = require('../controller/inNetwrokController') 
 const {protect} = require('../middleware/authMiddleware')
 
 const { uploadMiddleware, 
@@ -20,7 +20,7 @@ router.post('/inNetworkNotes/:id', protect, uploadProgress_Middleware, uploadMid
 router.get('/:id', protect, getAllInNetworks)
 
 
-router.get('/inNetworkNotes/:id', protect, getComments)
+router.get('/getInNetworkNotes/:id', protect, getCommentsOfInNetwork)
 router.get('/notes/uploads/:id', protect, getUploadedFile) // Note: should be requested with fileID in the params
 
 

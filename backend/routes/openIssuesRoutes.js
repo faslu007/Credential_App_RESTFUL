@@ -8,12 +8,14 @@ const multer  = require('multer')
 const upload = multer();
 const { createOpenIssues,
         updateOpenIssues,
-        createCommentOnIssue } = require('../controller/openIssuesController');
+        createCommentOnIssue,
+        getCommentsOfIssues } = require('../controller/openIssuesController');
 
 
 //API -- /api/openIssues
 router.post('/:id', protect, upload.none(), createOpenIssues);
 router.put('/:id', protect, upload.none(), updateOpenIssues);
+router.get('/getCommentsOfIssues/:id', protect, getCommentsOfIssues);
 
 router.post('/notes/:id', protect, uploadProgress_Middleware, uploadMiddleware, createCommentOnIssue);
 

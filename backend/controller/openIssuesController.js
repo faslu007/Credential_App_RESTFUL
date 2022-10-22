@@ -179,7 +179,7 @@ const updateOpenIssues = asyncHandler(async (req, res) => {
 // @Create a Note in Open Issues or Tickets 
 // @Route Post  /api/openIssues/createNote/:id (openIssue id)
 // @Access Private - Admin && User who are assigned to the account can post a note
-const createCommentOnIssue = asyncHandler(async (req, res, next) => {
+const createCommentOnIssue = asyncHandler(async (req, res) => {
             if(req.user.role == 'ViewOnly'){
                 res.status(401)
                 throw new Error('You do not have permission to create a new Note');
@@ -199,7 +199,7 @@ const createCommentOnIssue = asyncHandler(async (req, res, next) => {
                                                             .populate({ path: 'provider', 
                                                             select: 'assignedUsers'
                                                             })
-            
+
             let isAccountAssigned;
             if(previousState.account){
 
@@ -357,8 +357,22 @@ const createCommentOnIssue = asyncHandler(async (req, res, next) => {
             }
 }); 
 
+// @Get all Notes in an Open Issues or Ticket
+// @Route Get  /api/openIssues/getNotes/:id (openIssue id)
+// @Access Private - All users who has access can access
+const getCommentsOfIssues = asyncHandler(async (req, res) => {
+    try {
+        const comments = await openIssue.findById({_id: req.params.id}).select('notes')
+        res.status(200).json(comments)
+    } catch (error) {
+        res.status(500)
+        throw new Error('Not able to get the notes / comments from the records')
+    }
+});
+
 module.exports = {
     createOpenIssues,
     updateOpenIssues,
     createCommentOnIssue,
+    getCommentsOfIssues,
 }

@@ -33,7 +33,8 @@ const createInNetwork = asyncHandler(async (req, res) => {
         }
         
         let isProviderAssigned;
-        if(req.user.role.includes('Admin' || 'User') &&   !isAccountAssigned){
+        if(req.user.role == 'Admin' || 'User' &&   !isAccountAssigned){
+            
             const  provider = await Provider.findOne({_id: req.params.id}).select('assignedUsers') 
             provider && provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = provider : isProviderAssigned = false;
         }
@@ -77,6 +78,7 @@ const createInNetwork = asyncHandler(async (req, res) => {
         }
 
         if(isProviderAssigned){
+            
             try {
                 const insurance = await InNetwork.create({
                     insuranceName: insuranceName,
@@ -370,14 +372,12 @@ const createComment = asyncHandler(async (req, res) => {
 
 
 
-// |||Module pending to code|||
 // @Get all comments / notes pertains to the insurance user requesting
-// @Route GET   api/inNetwork/notes/:id
+// @Route GET   api/inNetwork/getInNetworkNotes/:id
 // @access private
-    // need to code user privilege validation
-const getComments = asyncHandler(async (req, res) => {
+const getCommentsOfInNetwork = asyncHandler(async (req, res) => {
     try {
-        const comments  = await InNetwork.findById({_id: req.params.id }).select('notes').select('status').select('user').populate('user',{'name':1})    
+        const comments  = await InNetwork.findById({_id: req.params.id }).select('notes')    
         res.status(200).json(comments);
     } catch (error) {
             res.status(401).json(error);
@@ -408,5 +408,5 @@ module.exports = {
     updateInNetwork,
     getAllInNetworks,
     createComment,
-    getComments
+    getCommentsOfInNetwork
 }
