@@ -15,9 +15,11 @@ const medicalDirectorSchema = mongoose.Schema({
         max: 30
     },
     directorSSN: {
-        type: Number,
+        type: String,
         require: true,
         trim: true,
+        minlength: [9, 'Minimum 9 digits required to Save SSN'],
+        maxlength: [9, 'Maximum 9 digits allowed to save a SSN'],
     },
 })
 
@@ -50,7 +52,7 @@ const bankInfoSchema = mongoose.Schema({
         bankAddress: {
             require: true,
             type: String,
-            max: 50,
+            max: 120,
         } 
 })
 
@@ -88,8 +90,10 @@ const ownersAndManagingEmployeesSchema = mongoose.Schema({
         trim: true
     },
     ssn: {
-        type: Number,
+        type: String,
         trim: true,
+        maxlength: [9, 'Maximum 9 digits allowed in SSN'],
+        maxlength: [9, 'Minimum 9 digits required in SSN'],
     },
     birthPlaceAndCity: {
         type: String,
@@ -147,8 +151,6 @@ const locationSchema = mongoose.Schema({
     },
     locationType: {
         type: String,
-        max: 20,
-        trim: true,
         enum: ['Primary, Billing & Mailing Address','Primary', 'Billing', 'Mailing',
                 'Additional Service Location'],
     },
@@ -281,14 +283,15 @@ const accountInfoSchemaSchema = mongoose.Schema({
         trim: true
     },
     taxID: {
-        type: Number,
-        trim: true
+        type: String,
+        minlength: 9,
+        maxlength: 9
     },
     taxClassification: {
         type: String,
         enum: ['Single Member LLC', 'Sole Proprietorship/Individual',
-                'c-Corporation', 'S-Corporation', 'Partnership', 'Trust/Estate',
-                'LLC- Corp', 'LLC S-Corp', 'LLC-Partnership', 'Other']
+                'C-Corporation', 'S-Corporation', 'Partnership', 'Trust/Estate',
+                'LLC- Corp', 'LLC S-Corp', 'LLC-Partnership', 'Other'],
     },
     businessStartDate: {
         type: String,
@@ -296,12 +299,14 @@ const accountInfoSchemaSchema = mongoose.Schema({
         max: 15,
     },
     groupNPI: {
-        type: Number,
+        type: String,
+        minlength: 10,
+        maxlength: 10,
         trim: true
     },
     taxonomy: {
         type: String,
-        max: 20,
+        max: [20, 'Min 20 characters allowed'],
         trim: true,
     },
     specialty: {
@@ -315,17 +320,17 @@ const accountInfoSchemaSchema = mongoose.Schema({
         trim: true,
     },
     phone: {
-        type: Number,
+        type: String,
         trim: true,
     },
     fax: {
-        type: Number,
+        type: String,
         trim: true,
     },
     officeContactName: {
         type: String,
         trim: true,
-        max: 14,
+        max: 30,
     },
     locations: [locationSchema],
     medicarePTAN: {
@@ -340,8 +345,8 @@ const accountInfoSchemaSchema = mongoose.Schema({
     },
     licenseDetails: [licenseSchema],
     ownersAndManagingEmployees: [ownersAndManagingEmployeesSchema],
-    bankInfo: [bankInfoSchema],
-    medicalDirector: [medicalDirectorSchema],
+    bankInfo: bankInfoSchema,
+    medicalDirector: medicalDirectorSchema,
 }, {
     timestamps: true
 })
