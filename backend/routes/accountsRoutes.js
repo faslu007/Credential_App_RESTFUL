@@ -6,7 +6,7 @@ const {getAccounts, createAccount, updateAccount,
 
 const { getAccountsListForSideBar } = require('../controller/accountsSideBarController')
 
-        const {protect} = require('../middleware/authMiddleware');
+const {protect} = require('../middleware/authMiddleware');
 
 const multer  = require('multer')
 const upload = multer()
