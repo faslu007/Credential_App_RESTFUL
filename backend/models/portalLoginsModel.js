@@ -37,7 +37,7 @@ const portalLoginsSchema = mongoose.Schema({
     account: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Account',
-      },
+    },
     provider: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Provider',

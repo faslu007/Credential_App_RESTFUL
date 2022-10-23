@@ -37,8 +37,9 @@ app.use('/api/accounts', require('./routes/accountsRoutes'));
 app.use('/api/inNetwork', require('./routes/inNetworkRoutes'));
 app.use('/api/openIssues', require('./routes/openIssuesRoutes'));
 app.use('/api/portalLogins', require('./routes/portalLoginsRoutes'));
+app.use('/api/pif', require('./routes/pifRoutes'));
 
-// error handler middleware - return structured error message
+// error handler middleware - return structured error message - this should be always placed beneath the routes to work
 app.use(errorHandler);
 
 
