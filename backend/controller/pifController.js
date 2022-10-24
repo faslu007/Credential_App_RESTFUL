@@ -23,6 +23,8 @@ const createPIF = asyncHandler(async(req, res) => {
     let isProviderAssigned;
     if(req.user.role.includes('Admin' || 'User') &&   !isAccountAssigned){
         const  provider = await Provider.findOne({_id: req.params.id}).select('assignedUsers') 
+        console.log(provider)
+        console.log(req.user.id)
         provider && provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = true : isProviderAssigned = false;
     };
     
@@ -398,6 +400,219 @@ const createPIF = asyncHandler(async(req, res) => {
                 throw new Error(error)
             }
     }
+
+    if(isProviderAssigned) {
+        const {
+            providerFirstName, providerMiddleName, providerLastName, providerNPI, providerSSN, taxonomy, specialty,
+            caqhNumber, providerRole, providerTitle, hospitalAffiliations, providerContactNumber, providerContactEmail, medicarePTAN, medicaidID,
+            } = req.body;
+            if (
+                !providerFirstName, !providerLastName, !providerNPI, !taxonomy, !specialty, !taxonomy,
+                !providerRole, !providerTitle, !providerContactNumber
+            ) {
+                res.status(401)
+                throw new Error('Please add all the required fields.')
+            };
+
+                // Managing address inputs
+                const {
+                    location1Name, location1Type, location1addressLine1, location1addressLine2, location1city, location1state, location1countyOrParish ,location1zip,
+                    location2Name, location2Type, location2addressLine1, location2addressLine2, location2city, location2state, location2countyOrParish ,location2zip,
+                    location3Name, location3Type, location3addressLine1, location3addressLine2, location3city, location3state, location3countyOrParish ,location3zip,
+                    location4Name, location4Type, location4addressLine1, location4addressLine2, location4city, location4state, location4countyOrParish ,location4zip,
+                    location5Name, location5Type, location5addressLine1, location5addressLine2, location5city, location5state, location5countyOrParish ,location5zip,
+                } = req.body;
+
+                        // form validation
+                                if(location1Name && !location1Type || !location1addressLine1 || !location1addressLine2 || !location1city || !location1state 
+                                    || !location1countyOrParish  ||!location1zip) {
+                                        res.status(400)
+                                        throw new Error('Please provide all the fields in the Location 1')
+                                    };
+                                if(location2Name && !location2Type || !location2addressLine1 || !location2addressLine2 || !location2city || !location2state 
+                                    || !location2countyOrParish  ||!location2zip) {
+                                        res.status(400)
+                                        throw new Error('Please provide all the fields in the Location 2')
+                                    };
+                                if(location3Name && !location3Type || !location3addressLine1 || !location3addressLine2 || !location3city || !location3state 
+                                    || !location3countyOrParish  ||!location3zip) {
+                                        res.status(400)
+                                        throw new Error('Please provide all the fields in the Location 3')
+                                    };
+                                if(location4Name && !location4Type || !location4addressLine1 || !location4addressLine2 || !location4city || !location4state 
+                                    || !location4countyOrParish  ||!location4zip) {
+                                        res.status(400)
+                                        throw new Error('Please provide all the fields in the Location 4')
+                                    };
+                                if(location5Name && !location5Type || !location5addressLine1 || !location5addressLine2 || !location5city || !location5state 
+                                    || !location5countyOrParish  || !location5zip) {
+                                        res.status(400)
+                                        throw new Error('Please provide all the fields in the Location 5')
+                                    };
+
+            // Managing license inputs
+            const {
+                license1Type, license1Number, license1Other, license1State, license1Effective, license1Expiry,
+                license2Type, license2Number, license2Other, license2State, license2Effective, license2Expiry,
+                license3Type, license3Number, license3Other, license3State, license3Effective, license3Expiry,
+                license4Type, license4Number, license4Other, license4State, license4Effective, license4Expiry,
+                license5Type, license5Number, license5Other, license5State, license5Effective, license5Expiry,
+            } = req.body;
+                            // form validation
+                                if(license1Type && !license1Number || !license1Effective || !license1Expiry) {
+                                        res.status(400)
+                                        throw new Error('Please provide all the fields in the License section 01')
+                                    };
+                                if(license2Type && !license2Number || !license2Effective || !license2Expiry) {
+                                    res.status(400)
+                                    throw new Error('Please provide all the fields in the License section 02')
+                                };
+                                if(license3Type && !license3Number || !license3Effective || !license3Expiry) {
+                                    res.status(400)
+                                    throw new Error('Please provide all the fields in the License section 03')
+                                };
+                                if(license4Type && !license4Number || !license4Effective || !license4Expiry) {
+                                    res.status(400)
+                                    throw new Error('Please provide all the fields in the License section 04')
+                                };
+                                if(license5Type && !license5Number || !license5Effective || !license5Expiry) {
+                                    res.status(400)
+                                    throw new Error('Please provide all the fields in the License section 05')
+                                };
+
+                // creating location object for each location provided
+                class ServiceLocations {
+                    constructor(locationName, locationType, addressLine1, addressLine2, 
+                                city, state, countyOrParish, zip) {
+                        this.locationName = locationName;
+                        this.locationType = locationType;
+                        this.addressLine1 = addressLine1;
+                        this.addressLine2 = addressLine2;
+                        this.city = city;
+                        this.state = state;
+                        this.countyOrParish = countyOrParish;
+                        this.zip = zip;
+                    }
+                    };
+            let allLocations = [];
+                    // evoking constructor function if all fields are given
+                    if(location1Name && location1Type && location1addressLine1 && location1addressLine2 && location1city && location1state && location1countyOrParish && location1zip){
+                        const location1 = new ServiceLocations(location1Name, location1Type, location1addressLine1, location1addressLine2, location1city, location1state, location1countyOrParish ,location1zip,);
+                        allLocations.push(location1);
+                        
+                    };
+
+                    if(location2Name && location2Type && location2addressLine1 && location2addressLine2 && location2city && location2state && location2countyOrParish && location2zip){
+                        const location2 = new ServiceLocations(location2Name, location2Type, location2addressLine1, location2addressLine2, location2city, location2state, location2countyOrParish ,location2zip,);
+                        allLocations.push(location2);
+                        
+                    };
+
+                    if(location3Name && location3Type && location3addressLine1 && location3addressLine2 && location3city && location3state && location3countyOrParish && location3zip){
+                        const location3 = new ServiceLocations(location3Name, location3Type, location3addressLine1, location3addressLine2, location3city, location3state, location3countyOrParish ,location3zip,);
+                        allLocations.push(location3);
+                        
+                    };
+
+                    if(location4Name && location4Type && location4addressLine1 && location4addressLine2 && location4city && location4state && location4countyOrParish && location4zip){
+                        const location4 = new ServiceLocations(location4Name, location4Type, location4addressLine1, location4addressLine2, location4city, location4state, location4countyOrParish ,location4zip,);
+                        allLocations.push(location4);
+                        
+                    };
+
+                    if(location5Name && location5Type && location5addressLine1 && location5addressLine2 && location5city && location5state && location5countyOrParish && location5zip){
+                        const location5 = new ServiceLocations(location5Name, location5Type, location5addressLine1, location5addressLine2, location5city, location5state, location5countyOrParish ,location5zip,);
+                        allLocations.push(location5);
+                    };
+            
+                
+                class ProviderLicenses {
+                    constructor(licenseType, licenseNumber, otherLicense, licenseState, licenseEffective, licenseExpiry) 
+                                {
+                                    this.licenseType = licenseType;
+                                    this.licenseNumber = licenseNumber;
+                                    otherLicense ? this.otherLicense = otherLicense : null;
+                                    licenseState ? this.licenseState = licenseState : null;
+                                    licenseEffective ? this.licenseEffective : null 
+                                    licenseExpiry ? this.licenseExpiry : null
+                                }
+                                };
+                let allLicenses = [];
+    
+                            if(license1Type && license1Number){
+                                const license1 = new ProviderLicenses(license1Type, license1Number, license1Other, license1State,  license1Effective, license1Expiry);
+                                allLicenses.push(license1);
+                                
+                            };
+
+                            if(license2Type && license2Number){
+                                const license2 = new ProviderLicenses(license2Type, license2Number, license2Other, license2State,  license2Effective, license2Expiry);
+                                allLicenses.push(license2);
+                            };
+
+                            if(license3Type && license3Number){
+                                const license3 = new ProviderLicenses(license3Type, license3Number, license3Other, license3State,  license3Effective, license3Expiry,);
+                                allLocations.push(license3);
+                            };
+
+                            if(license4Type && license4Number){
+                                const license4 = new ProviderLicenses(license4Type, license4Number, license4Other, license4State,  license4Effective, license4Expiry,);
+                                allLicenses.push(license4);
+                            };
+
+                            if(license5Type && license5Number){
+                                const license5 = new ProviderLicenses(license5Type, license5Number, license5Other, license5State,  license5Effective, license5Expiry,);
+                                allLicenses.push(license5);
+                                
+                            };
+                
+
+                            // Creating a main object containing all the given info to push to the db
+            class ProviderInfo {
+                    constructor( providerFirstName, providerMiddleName, providerLastName, providerNPI, providerSSN, taxonomy, specialty,
+                                caqhNumber, providerRole, providerTitle, hospitalAffiliations, medicarePTAN, medicaidID,  providerContactNumber, providerContactEmail, allLocations, 
+                                allLicenses) {
+                                    this.providerFirstName = providerFirstName; // this is required
+                                    providerMiddleName ? this.providerMiddleName = providerMiddleName : null, // this is optional
+                                    this.providerLastName = providerLastName;
+                                    providerNPI ? this.providerNPI = providerNPI : null,
+                                    providerSSN ? this.providerSSN = providerSSN : null,
+                                    taxonomy ? this.taxonomy = taxonomy : null,
+                                    specialty ? this.specialty = specialty : null,
+                                    caqhNumber ? this.caqhNumber = caqhNumber : null,
+                                    providerRole ? this.providerRole = providerRole : null,
+                                    providerTitle ? this.providerTitle = providerTitle : null,
+                                    hospitalAffiliations ? this.hospitalAffiliations = hospitalAffiliations : null;
+                                    medicarePTAN ? this.medicarePTAN = medicarePTAN : null;
+                                    medicaidID ? this.medicaidID = medicaidID : null;
+                                    providerContactNumber ? this.providerContactNumber = providerContactNumber : null,
+                                    providerContactEmail ? this.providerContactEmail = providerContactEmail : null,
+                                    this.serviceLocations = allLocations;
+                                    this.providerLicenses = allLicenses;
+                                }
+                    };
+            
+            const providerInfo = new ProviderInfo(providerFirstName, providerMiddleName, providerLastName, providerNPI, providerSSN, taxonomy, specialty,
+                caqhNumber, providerRole, providerTitle, hospitalAffiliations, medicarePTAN, medicaidID,  providerContactNumber, providerContactEmail, allLocations, 
+                allLicenses);
+
+            try {
+                const pif = await PIF.create({
+                    name: `${providerFirstName} ${providerFirstName}`,
+                    provider: req.params.id,
+                    providerInfo: providerInfo
+                })
+                res.status(200).json(pif)
+            } catch (error) {
+                res.status(501)
+                throw new Error(error)
+            }
+
+               
+
+        };
+
+
 });
 
 

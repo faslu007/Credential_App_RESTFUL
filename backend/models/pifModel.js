@@ -189,29 +189,98 @@ const locationSchema = mongoose.Schema({
     }
 });
 
+
+//Provider License Schema which is different from the Group/Facility Licenses
 const providerLicensesSchema = mongoose.Schema({
+    licenseType: {
+        type: String,
+        require: true,
+        enum: ['State', 'DEA', 'Board-Certification', 'Other' ],
+        max: 25
+    },
     licenseNumber: {
         type: String,
         require: true,
         trim: true,
         max: 25
     },
-    licenseType: {
+    otherLicense: {
         type: String,
-        require: true,
-        enum: ['State-Medical', 'DEA', 'Board-Certification', ],
-        max: 25
+        trim: true,
+        max: [30, 'Min 20 characters allowed'],
     },
     licenseState: {
         type: String,
         max: 25,
         trim: true
+    },
+    licenseEffective: {
+        type: Date,
+        trim: true,
+        require: [true, 'Please provide license effective date']
+    },
+    licenseExpiry: {
+        type: Date,
+        trim: true,
+    },
+});
+
+// Provider locations schema
+const providerServiceLocationsSchema = mongoose.Schema({
+    locationName: {
+        type: String,
+        max: 20,
+        trim: true,
+    },
+    locationType: {
+        type: String,
+        enum: ['Primary', 'Secondary','Tertiary', 'Forth', 'Fifth',],
+        require: true
+    },
+    addressLine1: {
+        type: String,
+        max: 25,
+        trim: true,
+        require: true
+    },
+    addressLine2: {
+        type: String,
+        max: 25,
+        trim: true,
+    },
+    city: {
+        type: String,
+        max: 25,
+        require: true,
+        trim: true
+    },
+    state: {
+        type: String,
+        max: 25,
+        require: true,
+        trim: true
+    },
+    countyOrParish: {
+        type: String,
+        max: 25,
+        require: [true,'Please add a County or Parish'],
+        trim: true
+    },
+    zip: {
+        type: Number,
+        require: [true,'Please add Zip code'],
     }
 })
 
 
 const providerInfoSchema = mongoose.Schema({
     providerFirstName: {
+        type: String,
+        trim: true,
+        require: true,
+        max: 50
+    },
+    providerMiddleName: {
         type: String,
         trim: true,
         require: true,
@@ -224,14 +293,13 @@ const providerInfoSchema = mongoose.Schema({
         max: 50
     },
     providerNPI: {
-        type: Number,
+        type: String,
         max: 10,
         trim: true
     },
     providerSSN: {
         type: String,
         trim: true,
-        require: true,
         max: 50
     },
     taxonomy: {
@@ -239,13 +307,13 @@ const providerInfoSchema = mongoose.Schema({
         max: 20,
         trim: true,
     },
-    Specialty: {
+    specialty: {
         type: String,
         max: 30,
         trim: true,
     },
     caqhNumber: {
-        type: Number,
+        type: String,
         max: 15,
         trim: true
     },
@@ -259,11 +327,32 @@ const providerInfoSchema = mongoose.Schema({
         max: 30,
         trim: true
     },
-    providerLicenses: [providerLicensesSchema],
-    hospitalAffliations: [{
+    providerContactNumber: {
         type: String,
-        enum: ['PCP', 'Specialist', 'Ordering/Prescribing'],
+        max: 15,
         trim: true
+    },
+    providerContactEmail: {
+        type: String,
+        max: 15,
+        trim: true
+    },
+    medicarePTAN: {
+        type: String,
+        max: 10,
+        trim: true,
+    },
+    medicaidID: {
+        type: String,
+        max: 15,
+        trim: true,
+    },
+    serviceLocations: [providerServiceLocationsSchema],
+    providerLicenses: [providerLicensesSchema],
+    hospitalAffiliations: [{
+        type: String,
+        trim: true,
+        max: [100, 'Exceeds maximum allowed character length: 100']
     }],
 })
 
@@ -356,7 +445,8 @@ const pifSchema = mongoose.Schema({
         name: {
             type: String,
             max: 20,
-            trim: true
+            trim: true,
+            unique: true,
         },
         account: {
             type: mongoose.Schema.Types.ObjectId,
