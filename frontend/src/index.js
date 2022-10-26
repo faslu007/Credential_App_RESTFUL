@@ -6,13 +6,6 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
 
-/* 
-React bootstarp config
-*/
-
-import "../node_modules/react-bootstrap/dist/react-bootstrap";
-import 'bootstrap/dist/css/bootstrap.min.css';
-
 const container = document.getElementById('root');
 const root = createRoot(container);
 

@@ -52,6 +52,7 @@ const registerSuperAdmin = asyncHandler( async (req, res) =>{
 // @Route POST api/users/verifyOTP
 // @access Public
 const verifyOTP = asyncHandler ( async (req, res) =>{
+    console.log(req.body)
     const {firstName, lastName, email, otp} = req.body;
     // form validation
     if (!firstName || !lastName || !email || !otp){
@@ -168,7 +169,6 @@ const getMyInfo = asyncHandler( async (req, res) =>{
 // @Route POST api/users/registerUser
 // @access Private -Admin only
 const registerUser = asyncHandler (async (req, res) => {
-    console.log(req.user)
     if (req.user.role !== 'Admin'){
         res.status(400)
         throw new Error ('You do not have privilege to create subUsers')

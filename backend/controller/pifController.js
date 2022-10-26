@@ -23,8 +23,6 @@ const createPIF = asyncHandler(async(req, res) => {
     let isProviderAssigned;
     if(req.user.role.includes('Admin' || 'User') &&   !isAccountAssigned){
         const  provider = await Provider.findOne({_id: req.params.id}).select('assignedUsers') 
-        console.log(provider)
-        console.log(req.user.id)
         provider && provider.assignedUsers.includes(req.user.id) ? isProviderAssigned = true : isProviderAssigned = false;
     };
     
@@ -250,7 +248,7 @@ const createPIF = asyncHandler(async(req, res) => {
 
                         if(license3Type && license3Number && license3Effective && license3Expiry){
                             const license3 = new License(license3Type, license3Number, license3Effective, license3Expiry,);
-                            allLocations.push(license3);
+                            allLicenses.push(license3);
                         };
 
                         if(license4Type && license4Number && license4Effective && license4Expiry){
@@ -525,7 +523,6 @@ const createPIF = asyncHandler(async(req, res) => {
                         allLocations.push(location5);
                     };
             
-                
                 class ProviderLicenses {
                     constructor(licenseType, licenseNumber, otherLicense, licenseState, licenseEffective, licenseExpiry) 
                                 {
@@ -552,7 +549,7 @@ const createPIF = asyncHandler(async(req, res) => {
 
                             if(license3Type && license3Number){
                                 const license3 = new ProviderLicenses(license3Type, license3Number, license3Other, license3State,  license3Effective, license3Expiry,);
-                                allLocations.push(license3);
+                                allLicenses.push(license3);
                             };
 
                             if(license4Type && license4Number){
@@ -595,10 +592,10 @@ const createPIF = asyncHandler(async(req, res) => {
             const providerInfo = new ProviderInfo(providerFirstName, providerMiddleName, providerLastName, providerNPI, providerSSN, taxonomy, specialty,
                 caqhNumber, providerRole, providerTitle, hospitalAffiliations, medicarePTAN, medicaidID,  providerContactNumber, providerContactEmail, allLocations, 
                 allLicenses);
-
+                
             try {
                 const pif = await PIF.create({
-                    name: `${providerFirstName} ${providerFirstName}`,
+                    name: `${providerFirstName} ${providerLastName}`,
                     provider: req.params.id,
                     providerInfo: providerInfo
                 })
@@ -607,9 +604,6 @@ const createPIF = asyncHandler(async(req, res) => {
                 res.status(501)
                 throw new Error(error)
             }
-
-               
-
         };
 
 
