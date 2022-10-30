@@ -1,7 +1,7 @@
 import {BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Register from './pages/Register';
 import OTPVerify from './pages/OTPVerify';
-import SignIn from './pages/login';
+import SignIn from './pages/Login';
 import  UserManagement  from "./pages/UserManagement";
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts'
