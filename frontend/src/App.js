@@ -1,9 +1,11 @@
 import {BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
 import Register from './pages/Register';
 import OTPVerify from './pages/OTPVerify';
-import SignIn from './pages/testPage'
+import SignIn from './pages/login';
+import  UserManagement  from "./pages/UserManagement";
+import Dashboard from './pages/Dashboard';
+import Accounts from './pages/Accounts'
+import AccountManagement from './pages/AccountManagement'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -13,11 +15,14 @@ function App() {
     <Router>
       <div className='container'>
         <Routes>
-          <Route path='/' element={<Dashboard/>}/>
+          <Route path='/login' element={<SignIn/>}/>
           <Route path='/register' element={<Register/>}/>
-          <Route path='/login' element={<Login/>}/>
           <Route path='/verifyotp' element={<OTPVerify/>}/>
-          <Route path='/testpage' element={<SignIn/>}/>
+          <Route path='/' element={<Dashboard/>}/>
+          <Route path='/accounts' element={<Accounts/>}/>
+          <Route path='/accountsmanagement' element={<AccountManagement/>}/>
+          <Route path='/usermanagement' element={<UserManagement/>}/>
+          <Route path='/reports' element={<></>}/>
         </Routes>
       </div>
     </Router>

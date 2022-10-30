@@ -11,6 +11,7 @@ const {sendOTP, sendUserTempPassword} = require('../middleware/otpMiddleware');
 // @Route POST api/users/
 // @access Public
 const registerSuperAdmin = asyncHandler( async (req, res) =>{
+    console.log(req.body)
     const {firstName, lastName, email, phone,
         password, organization, team, designation} = req.body
     // form validation
@@ -22,6 +23,7 @@ const registerSuperAdmin = asyncHandler( async (req, res) =>{
     // password strength validation
     checkStrongPassword(req.body.password) == true ? null : res.status(400).json("Please provide a strong password");
     // if user exists in db
+    
     const userExists = await User.findOne({email});
     if (userExists) {
         res.status(400)
@@ -31,6 +33,7 @@ const registerSuperAdmin = asyncHandler( async (req, res) =>{
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     //create tempUser
+    
     const saveTempUser = await tempUser.create({
         firstName, lastName, email, phone,
         organization, team, designation,
@@ -169,6 +172,7 @@ const getMyInfo = asyncHandler( async (req, res) =>{
 // @Route POST api/users/registerUser
 // @access Private -Admin only
 const registerUser = asyncHandler (async (req, res) => {
+    console.log('yesss I am reaching hereeee')
     if (req.user.role !== 'Admin'){
         res.status(400)
         throw new Error ('You do not have privilege to create subUsers')
@@ -211,6 +215,7 @@ const registerUser = asyncHandler (async (req, res) => {
 // @Route api/users/getallUsers
 // @access Private - Admin only
 const getAllUsers = asyncHandler(async (req, res) => {
+    console.log('request for all users')
     if(req.user.role != 'Admin') {
         res.status(401)
         throw new Error('User does not have privilege to access all users info')
@@ -218,6 +223,13 @@ const getAllUsers = asyncHandler(async (req, res) => {
     try {
         const allUsers = await User.find()
         .select('-password')
+
+        const tempUsers = await tempUser.find()
+        .select('-password')
+
+        if(tempUsers) {
+            tempUsers.forEach((user) => allUsers.push(user))
+        }
 
         res.status(200).json(allUsers)
     } catch (error) {
@@ -230,6 +242,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // @Route PATCH  api/users/updateUser
 // @access Private - Admin only
 const updateUser = asyncHandler (async(req, res) => {
+    console.log(req.params.id)
         if(req.user.role != 'Admin') {
             res.status(401)
             throw new Error('Does not have privilege to update user info')

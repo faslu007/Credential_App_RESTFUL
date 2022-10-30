@@ -59,7 +59,7 @@ const sendUserTempPassword = async (temporaryUser, generatedTempPass, req, res) 
                 if(err){ 
                     res.status(400).json(err)
                 }
-                res.status(200).json({"firstName": temporaryUser.firstName, "lastName": temporaryUser.lastName, "email": temporaryUser.email, "OTPStatus": info})   
+                res.status(200).json(temporaryUser)   
              })
     } catch (error) {
         res.status(400).json(error)

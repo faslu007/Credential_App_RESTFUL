@@ -63,6 +63,10 @@ const tempUserSchema = mongoose.Schema(
     otp: {
         type: String,
       },
+    pendingVerication: {
+      type: Boolean,
+      default: true
+  },
 
     createdAt: { type: Date, expires: '1d', default: Date.now }
     

@@ -1,6 +1,6 @@
 import React from 'react'
-import Header from '../components/Header'
 import { useSelector, useDispatch } from 'react-redux'
+import SideBarAndHeader  from '../components/SideBarAndHeader/SideBarAndHeader'
 
 
 
@@ -10,13 +10,7 @@ function Dashboard() {
   console.log('dashboard')
   return (
     <>
-    <Header/>
-    <div>
-
-      {user ? <p>{user.userName}</p> : null}
-    
-      <h1>DashBoard</h1>
-    </div>
+      <SideBarAndHeader page='Dashboard' />
     </>
     
   )
