@@ -172,7 +172,6 @@ const getMyInfo = asyncHandler( async (req, res) =>{
 // @Route POST api/users/registerUser
 // @access Private -Admin only
 const registerUser = asyncHandler (async (req, res) => {
-    console.log('yesss I am reaching hereeee')
     if (req.user.role !== 'Admin'){
         res.status(400)
         throw new Error ('You do not have privilege to create subUsers')

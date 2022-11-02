@@ -20,9 +20,18 @@ const UserManagement = () => {
   const dispatch = useDispatch()
 
   const { user } = useSelector((state) => state.auth)
+
+    if (!user) {
+      navigate('/login')
+    }
+
+
+
   const { isLoading, isError, message } = useSelector(
     (state) => state.users
   )
+
+
 
 
   useEffect(() => {
@@ -30,16 +39,12 @@ const UserManagement = () => {
       toast.error(message)
   }
 
-    if (!user) {
-      navigate('/login')
-    }
-
     dispatch(getAllUsers())
 
     return () => {
       dispatch(reset())
     }
-  }, [user, navigate, isError])
+  }, [isError])
 
   if (isLoading) {
     return <Spinner />
@@ -62,12 +67,12 @@ const UserManagement = () => {
 
       
 
-      
+
 
       <Paper 
         elevation='3'
-        variant="outlined"
-        style={{height: 'auto', width: 'auto', marginLeft: '240px', marginTop: '-570px', padding: '25px'}}
+        variant="contained"
+        style={{ height: 'auto', width: 'auto', marginLeft: '240px', marginTop: '-570px', padding: '25px', }}
         >
             <UserTable/>
 

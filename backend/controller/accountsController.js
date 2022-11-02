@@ -11,6 +11,7 @@ const path = require("path");
 // @Route Get api/accounts
 // @access private - Admin Only - Accounts Management
 const getAccounts = asyncHandler( async (req, res) => {
+    console.log('it comes here  ')
         if(req.user.role !== 'Admin') {
             res.status(401)
             throw new Error('User does not have privilege to access all accounts')
@@ -21,6 +22,7 @@ const getAccounts = asyncHandler( async (req, res) => {
                 .populate('providers', 'providerName');
             res.status(200).json(accounts);
         } catch (error) {
+            console.log(error)
             res.status(404)
             throw new Error('Error retrieving all accounts')
         }

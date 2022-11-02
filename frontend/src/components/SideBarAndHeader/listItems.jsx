@@ -10,7 +10,7 @@ import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 
 
-let  thisPage = 123
+let  thisPage;
 
 
 

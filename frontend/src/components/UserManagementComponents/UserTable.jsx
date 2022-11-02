@@ -15,6 +15,7 @@ import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import BadgeIcon from '@mui/icons-material/Badge';
 import PopUpForm from './PopUpForm'
+import makeStyles from "@material-ui/core/styles/makeStyles";
 
 
 
@@ -29,15 +30,23 @@ const UserTable = () => {
         setUserForEdit({user: user})
   }
 
+  const useStyles = makeStyles({
+    tableContainer: {
+      overflow: "initial"
+    }
+  });
+
   return (
     <div>
       <TableContainer  
         component={Paper} 
-        style={{borderRadius: '10px', alignItems:'center'}}>
-        <Table  
-            sx={{ minWidth: 800 }} 
+        style={{borderRadius: '10px', alignItems:'center',}}>
+        <Table 
+            
+            sx={{ minWidth: 800, height: 'auto' }} 
             aria-label="User Table">
-            <TableHead>
+            <TableHead
+            >
                 <TableRow 
                 style={{backgroundColor: '#6699CC', fontWeight: 'bold'}}>
                     <TableCell align="center">

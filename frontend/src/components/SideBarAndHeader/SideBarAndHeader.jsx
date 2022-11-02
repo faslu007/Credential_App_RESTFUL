@@ -148,7 +148,8 @@ function DashboardContent(props) {
 
   return (
     <ThemeProvider theme={mdTheme}>
-      {open ? <h1 style={{padding: 0, fontSize:25, marginTop: 20, marginLeft: 18, position:'absolute',zIndex: 9999, }}>Credential-Pro</h1> : null}
+      {open ? <h1 style={{padding: 0, fontSize:25, marginTop: 20, marginLeft: 18, position:'fixed',zIndex: 9999, }}>Credential-Pro</h1> : null}
+      <Divider />
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
         
@@ -196,15 +197,18 @@ function DashboardContent(props) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
+              position: 'fixed',
               px: [1],
             }}
           >
-            <IconButton onClick={toggleDrawer}>
+            {/* <IconButton onClick={toggleDrawer}>
               <ChevronLeftIcon />
-            </IconButton>
+            </IconButton> */}
           </Toolbar>
-          <Divider />
-          <List  component="nav" >
+  
+          <List 
+            style={{position: 'fixed', marginTop: '05%'}}
+            component="nav" >
             {mainListItems}
           </List>
         </Drawer>
