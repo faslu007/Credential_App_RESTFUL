@@ -39,6 +39,23 @@ app.use('/api/openIssues', require('./routes/openIssuesRoutes'));
 app.use('/api/portalLogins', require('./routes/portalLoginsRoutes'));
 app.use('/api/pif', require('./routes/pifRoutes'));
 
+
+
+// Serve frontend
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../frontend/build')));
+  
+    app.get('*', (req, res) =>
+      res.sendFile(
+        path.resolve(__dirname, '../', 'frontend', 'build', 'index.html')
+      )
+    );
+  } else {
+    app.get('/', (req, res) => res.send('Please set to production'));
+  }
+
+
+
 // error handler middleware - return structured error message - this should be always placed beneath the routes to work
 app.use(errorHandler);
 
