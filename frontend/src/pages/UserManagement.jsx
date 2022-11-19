@@ -44,7 +44,7 @@ const UserManagement = () => {
     return () => {
       dispatch(reset())
     }
-  }, [isError])
+  }, [])
 
   if (isLoading) {
     return <Spinner />

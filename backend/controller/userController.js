@@ -241,7 +241,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // @Route PATCH  api/users/updateUser
 // @access Private - Admin only
 const updateUser = asyncHandler (async(req, res) => {
-    console.log(req.params.id)
+    console.log(req.body)
         if(req.user.role != 'Admin') {
             res.status(401)
             throw new Error('Does not have privilege to update user info')

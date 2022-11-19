@@ -8,8 +8,6 @@ import { verifyOPT, reset }  from '../features/auth/authSlice'
 
 
 function OTPVerify() {
-    console.log('loginnnnn')
-
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',

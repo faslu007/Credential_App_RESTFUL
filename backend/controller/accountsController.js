@@ -32,6 +32,7 @@ const getAccounts = asyncHandler( async (req, res) => {
 // @Route Post   api/accounts
 // @access private - Admin Only - Accounts Management
 const createAccount = asyncHandler(async (req, res) => {
+    console.log(req.body)
         if(req.user.role != 'Admin'){
             res.status(400)
             throw new Error('User does not have privilege to create a new account, please contact you Administrator');
@@ -52,14 +53,22 @@ const createAccount = asyncHandler(async (req, res) => {
                 primaryContactName: primaryContactName,
                 primaryContactPhone: primaryContactPhone,
             })
-            
+            console.log(account)
             res.status(200).json(account);
         } catch (error) {
             // unlike other validation unique property does not come with message parameter.... 
             // ....so manually passing the error message 
-            error.message.includes('duplicate key error collection') ? (function(){throw new Error('Another account already exists with the same name')}()) : null;
-            res.status(401)
-            throw new Error ( error )
+            // error.message.includes('duplicate key error collection') ? (function(){throw new Error('Another account already exists with the same name')}()) : null;
+            // res.status(401)
+            // throw new Error ( error )
+            res.status(400)
+            if(error.message.includes('duplicate key error collection')) {
+                throw new Error ('Another account exisits with the same name');
+            } else {
+                throw new Error ('Internal server error')
+            }
+
+            
         }
 });
 
